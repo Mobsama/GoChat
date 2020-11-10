@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">GoChat</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_msg">聊天</string>
+    <string name="title_buddy">联系人</string>
+    <string name="title_mine">我的</string>
+</resources>

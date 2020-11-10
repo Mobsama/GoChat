@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fillViewport="true"
+    tools:context=".User.LoginActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/CL_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="30dp"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp">
+
+        <TextView
+            android:id="@+id/tv_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@+id/CL_main"
+            app:layout_constraintLeft_toLeftOf="@+id/CL_main"
+            app:layout_constraintRight_toRightOf="@+id/CL_main"
+            android:text="GoChat"
+            android:textSize="50sp"
+            android:textStyle="bold"
+            android:textColor="@color/teal"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/tv_brief"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/tv_logo"
+            app:layout_constraintLeft_toLeftOf="@+id/CL_main"
+            app:layout_constraintRight_toRightOf="@+id/CL_main"
+            android:text="享受聊天的乐趣"
+            android:textSize="15sp" />
+
+        <LinearLayout
+            android:id="@+id/ll_et_bg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="30dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_brief"
+            app:layout_constraintLeft_toLeftOf="@+id/CL_main"
+            app:layout_constraintRight_toRightOf="@+id/CL_main"
+            android:background="@drawable/login_ll_bg"
+            android:gravity="center_horizontal"
+            android:padding="5dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:id="@+id/et_mail"
+                android:hint="账号/邮箱"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:inputType="text"
+                android:maxLines="1"
+                android:background="@null"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:layout_width="0dp"
+                    android:layout_weight="1.0"
+                    android:layout_height="50dp"
+                    android:id="@+id/et_password"
+                    android:hint="密码"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:inputType="textPassword"
+                    android:maxLines="1"
+                    android:background="@null"/>
+                <com.mob.gochat.CustomizeView.TimingTextView
+                    android:id="@+id/tv_forgot"
+                    android:paddingRight="5dp"
+                    android:textColor="@color/teal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="忘记密码"/>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/btn_login"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/login_btn_bg"
+            app:layout_constraintTop_toBottomOf="@id/ll_et_bg"
+            app:layout_constraintLeft_toLeftOf="@+id/CL_main"
+            app:layout_constraintRight_toRightOf="@+id/CL_main"
+            android:text="登录"/>
+
+        <TextView
+            android:id="@+id/tv_register_brief"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="@+id/CL_main"
+            app:layout_constraintLeft_toLeftOf="@+id/CL_main"
+            app:layout_constraintRight_toLeftOf="@+id/tv_register"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            android:text="还没有账号？"/>
+        <TextView
+            android:id="@+id/tv_register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="@+id/CL_main"
+            app:layout_constraintRight_toRightOf="@+id/CL_main"
+            app:layout_constraintLeft_toRightOf="@+id/tv_register_brief"
+            android:textColor="@color/teal"
+            android:text="马上注册"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

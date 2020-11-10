@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_msg">
+
+    <fragment
+        android:id="@+id/navigation_msg"
+        android:name="com.mob.gochat.Main.MsgFragment"
+        android:label="@string/title_msg"
+        tools:layout="@layout/fragment_msg" />
+
+    <fragment
+        android:id="@+id/navigation_buddy"
+        android:name="com.mob.gochat.Main.BuddyFragment"
+        android:label="@string/title_buddy"
+        tools:layout="@layout/fragment_buddy" />
+
+    <fragment
+        android:id="@+id/navigation_mine"
+        android:name="com.mob.gochat.Main.MineFragment"
+        android:label="@string/title_mine"
+        tools:layout="@layout/fragment_mine" />
+</navigation>
