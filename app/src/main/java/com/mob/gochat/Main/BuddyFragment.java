@@ -22,6 +22,8 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.github.promeg.pinyinhelper.Pinyin;
 import com.mob.gochat.CustomizeView.SideBarView;
+import com.mob.gochat.CustomizeView.StickyDecoration;
+import com.mob.gochat.Model.SortModel;
 import com.mob.gochat.R;
 import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
@@ -117,8 +119,6 @@ public class BuddyFragment extends Fragment {
                 if(models.get(i).getLetters().equals(s)){
                     manager.scrollToPositionWithOffset(i,0);
                     break;
-                }else if(models.get(i).getLetters().charAt(0) > s.charAt(0)){
-                    break;
                 }
             }
         });
@@ -131,125 +131,7 @@ public class BuddyFragment extends Fragment {
     }
 }
 
-class SortModel{
-    private String name;
-    private String letters;
 
-    public String getName(){ return name; }
-
-    public void setName(String name) {
-        char c;
-        if(Pinyin.isChinese(name.charAt(0))){
-            c = Pinyin.toPinyin(name.charAt(0)).toUpperCase().charAt(0);
-        }else{
-            c = name.toUpperCase().charAt(0);
-            if(!(c >= 'A' && c <= 'Z')){
-                c = '#';
-            }
-        }
-        this.name = name;
-        this.letters = c + "";
-    }
-
-    public String getLetters() {
-        return letters;
-    }
-}
-
-class StickyDecoration extends RecyclerView.ItemDecoration{
-    private int mTitleHeight;
-    private int mTextSize;
-    private List<SortModel> mData;
-    private Paint mPaint;
-    private Rect mBounds;
-
-    private static int TITLE_BG_COLOR = Color.parseColor("#FFDFDFDF");
-    private static int TITLE_TEXT_COLOR = Color.parseColor("#FF000000");
-
-    public StickyDecoration(Context context,List<SortModel> data){
-        super();
-        mData = data;
-        mPaint = new Paint();
-        mBounds = new Rect();
-        mTitleHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,30,context.getResources().getDisplayMetrics());
-        mTextSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,16,context.getResources().getDisplayMetrics());
-        mPaint.setTextSize(mTextSize);
-        mPaint.setAntiAlias(true);
-
-    }
-
-    @Override
-    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        super.getItemOffsets(outRect, view, parent, state);
-        int position = ((RecyclerView.LayoutParams)view.getLayoutParams()).getViewLayoutPosition();
-        if(position == 0
-                || !mData.get(position).getLetters().equals(mData.get(position - 1).getLetters())){
-            outRect.top = mTitleHeight;
-        }
-    }
-
-    @Override
-    public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        super.onDraw(c, parent, state);
-
-        int childCount = parent.getChildCount();
-        for(int i = 0; i < childCount; i++){
-            View child = parent.getChildAt(i);
-            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
-            int position = params.getViewLayoutPosition();
-            if(position == 0
-                    || !mData.get(position).getLetters().equals(mData.get(position - 1).getLetters())){
-                int left = parent.getPaddingLeft();
-                int right = parent.getWidth() - parent.getPaddingRight();
-                drawTitle(c,left,right,child,params,position);
-            }
-
-        }
-    }
-
-    private void drawTitle(Canvas c, int left, int right, View child, RecyclerView.LayoutParams params, int position) {
-        mPaint.setColor(TITLE_BG_COLOR);
-        c.drawRect(left, child.getTop() - params.topMargin - mTitleHeight, right, child.getTop() - params.topMargin, mPaint);
-        mPaint.setColor(TITLE_TEXT_COLOR);
-
-        mPaint.getTextBounds(mData.get(position).getLetters(), 0, mData.get(position).getLetters().length(), mBounds);
-        c.drawText(mData.get(position).getLetters(),
-                child.getPaddingLeft(),
-                child.getTop() - params.topMargin - (mTitleHeight / 2 - mBounds.height() / 2), mPaint);
-    }
-
-    @Override
-    public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        super.onDrawOver(c, parent, state);
-        int position = ((LinearLayoutManager)(parent.getLayoutManager())).findFirstVisibleItemPosition();
-        String tag = mData.get(position).getLetters();
-        View child = parent.findViewHolderForAdapterPosition(position).itemView;
-        boolean flag = false;
-        if ((position + 1) < mData.size()) {
-            //当前第一个可见的Item的字母索引，不等于其后一个item的字母索引，说明悬浮的View要切换了
-            if (null != tag && !tag.equals(mData.get(position + 1).getLetters())) {
-                //当第一个可见的item在屏幕中剩下的高度小于title的高度时，开始悬浮Title的动画
-                if (child.getHeight() + child.getTop() < mTitleHeight) {
-                    c.save();
-                    flag = true;
-                    c.translate(0, child.getHeight() + child.getTop() - mTitleHeight);
-                }
-            }
-        }
-        mPaint.setColor(TITLE_BG_COLOR);
-        c.drawRect(parent.getPaddingLeft(),
-                parent.getPaddingTop(),
-                parent.getRight() - parent.getPaddingRight(),
-                parent.getPaddingTop() + mTitleHeight, mPaint);
-        mPaint.setColor(TITLE_TEXT_COLOR);
-        mPaint.getTextBounds(tag, 0, tag.length(), mBounds);
-        c.drawText(tag, child.getPaddingLeft(),
-                parent.getPaddingTop() + mTitleHeight - (mTitleHeight / 2 - mBounds.height() / 2),
-                mPaint);
-        if (flag)
-            c.restore();//恢复画布到之前保存的状态
-    }
-}
 
 class BuddyAdapter extends BaseQuickAdapter<SortModel, BaseViewHolder> {
 
