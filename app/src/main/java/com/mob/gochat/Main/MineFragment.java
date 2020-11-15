@@ -21,7 +21,13 @@ public class MineFragment extends Fragment {
         userViewModel =
                 new ViewModelProvider(this).get(UserViewModel.class);
         View root = inflater.inflate(R.layout.fragment_mine, container, false);
-        final TextView textView = root.findViewById(R.id.text_mine);
+
+        TextView mTVGender = root.findViewById(R.id.tv_mine_gender);
+        TextView mTVBirthday = root.findViewById(R.id.tv_mine_birthday);
+        TextView mTVAddress = root.findViewById(R.id.tv_mine_address);
+        mTVGender.setText("你你你");
+        mTVBirthday.setText("你你你");
+        mTVAddress.setText("你你你");
         return root;
     }
 }

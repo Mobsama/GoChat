@@ -65,6 +65,7 @@ public class BuddyFragment extends Fragment {
                 "邓银生", "林小七", "uzi", "张飞", "韶关学院地头蛇", "duckingwu", "卢本伟", "高渐离婚",
                 "韶院过江龙欧阳宇豪", "爱新觉罗福泉", "%guozehong", "郭仔凡");
         List<SortModel> models = new ArrayList<>();
+
         for(String s : list){
             SortModel model = new SortModel();
             model.setName(s);
