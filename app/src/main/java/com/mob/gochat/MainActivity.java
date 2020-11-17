@@ -3,15 +3,12 @@ package com.mob.gochat;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -33,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -42,4 +38,5 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main,menu);
         return super.onCreateOptionsMenu(menu);
     }
+
 }

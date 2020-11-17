@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ChatActivity">
+
+    <LinearLayout
+        android:id="@+id/ll_info_user"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:paddingTop="40dp">
+
+        <ImageView
+            android:id="@+id/iv_info_avatar"
+            android:layout_marginStart="25dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/img_avatar_bg" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_marginStart="20dp"
+                android:id="@+id/tv_info_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="28sp"
+                android:text="Mob"/>
+
+            <TextView
+                android:layout_marginTop="3dp"
+                android:layout_marginStart="20dp"
+                android:id="@+id/tv_info_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GoChat号：10001"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_info_gender"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:background="@color/white"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@+id/ll_info_user">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/img_avatar_bg"
+            android:src="@drawable/ic_gender_black_24dp"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:id="@+id/tv_info_gender"/>
+
+            <View
+                android:layout_gravity="bottom"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_info_birthday"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/ll_info_gender">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/img_avatar_bg"
+            android:src="@drawable/ic_birthday_black_24dp"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_info_birthday"/>
+
+            <View
+                android:layout_gravity="bottom"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_info_address"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/ll_info_birthday">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/img_avatar_bg"
+            android:src="@drawable/ic_address_black_24dp"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_info_address"/>
+
+            <View
+                android:layout_gravity="bottom"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:id="@+id/btn_info_add"
+        app:layout_constraintTop_toBottomOf="@id/ll_info_address"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="添加好友"
+        android:background="@drawable/login_btn_bg"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:id="@+id/btn_info_delete"
+        app:layout_constraintTop_toBottomOf="@id/btn_info_add"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="删除好友"
+        android:background="@drawable/info_btn_delete_bg" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

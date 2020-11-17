@@ -1,5 +1,6 @@
 package com.mob.gochat.Main;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,7 +15,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
+import com.mob.gochat.ChatActivity;
+import com.mob.gochat.InfoActivity;
 import com.mob.gochat.R;
+import com.mob.gochat.Util.ClickUtil;
 import com.yanzhenjie.recyclerview.OnItemClickListener;
 import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenu;
@@ -59,6 +63,12 @@ public class MsgFragment extends Fragment {
                 adapter.notifyDataSetChanged();
             }
         };
+        mSRVMsg.setOnItemClickListener((view, adapterPosition) -> {
+            if(!ClickUtil.isFastDoubleClick()){
+                Intent intent = new Intent(getActivity(), ChatActivity.class);
+                startActivity(intent);
+            }
+        });
         mSRVMsg.setOnItemMenuClickListener(mMenuItemClickListener);
         mSRVMsg.setSwipeMenuCreator(mSwipeMenuCreator);
         mSRVMsg.setAdapter(adapter);

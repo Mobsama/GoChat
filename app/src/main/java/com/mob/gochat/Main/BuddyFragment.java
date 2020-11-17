@@ -1,12 +1,8 @@
 package com.mob.gochat.Main;
 
-import android.content.Context;
-import android.graphics.Canvas;
+import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,15 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
+import com.billy.android.swipe.SmartSwipe;
+import com.billy.android.swipe.SwipeConsumer;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.github.promeg.pinyinhelper.Pinyin;
 import com.mob.gochat.CustomizeView.SideBarView;
 import com.mob.gochat.CustomizeView.StickyDecoration;
+import com.mob.gochat.InfoActivity;
 import com.mob.gochat.Model.SortModel;
 import com.mob.gochat.R;
+import com.mob.gochat.Util.ClickUtil;
 import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
@@ -124,7 +123,12 @@ public class BuddyFragment extends Fragment {
             }
         });
 
-
+        mSRVBuddy.setOnItemClickListener((view, adapterPosition) -> {
+            if(!ClickUtil.isFastDoubleClick()){
+                Intent intent = new Intent(getActivity(),InfoActivity.class);
+                startActivity(intent);
+            }
+        });
         mSRVBuddy.setSwipeMenuCreator(mSwipeMenuCreator);
         mSRVBuddy.setOnItemMenuClickListener(mMenuItemClickListener);
         mSRVBuddy.setAdapter(buddyAdapter);
