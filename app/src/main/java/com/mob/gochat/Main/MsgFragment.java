@@ -16,13 +16,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.mob.gochat.ChatActivity;
-import com.mob.gochat.InfoActivity;
 import com.mob.gochat.R;
 import com.mob.gochat.Util.ClickUtil;
-import com.yanzhenjie.recyclerview.OnItemClickListener;
 import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
-import com.yanzhenjie.recyclerview.SwipeMenu;
-import com.yanzhenjie.recyclerview.SwipeMenuBridge;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
 import com.yanzhenjie.recyclerview.SwipeRecyclerView;
@@ -44,7 +40,7 @@ public class MsgFragment extends Fragment {
         mSRVMsg.addItemDecoration(new DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL));
         List<String> list = Arrays.asList("0","1","2","3","4","5","6");
         List data = new ArrayList(list);
-        MsgAdapter adapter = new MsgAdapter(R.layout.list_item_msg,data);
+        MsgAdapter adapter = new MsgAdapter(R.layout.msg_list_item,data);
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
             SwipeMenuItem deleteItem = new SwipeMenuItem(getContext());
             deleteItem.setBackground(R.color.red);
@@ -75,16 +71,16 @@ public class MsgFragment extends Fragment {
         return root;
     }
 
-}
+    class MsgAdapter extends BaseQuickAdapter<String, BaseViewHolder>{
 
-class MsgAdapter extends BaseQuickAdapter<String, BaseViewHolder>{
+        public MsgAdapter(int layoutResId, List data) {
+            super(layoutResId, data);
+        }
 
-    public MsgAdapter(int layoutResId, List data) {
-        super(layoutResId, data);
+        @Override
+        protected void convert(@NotNull BaseViewHolder baseViewHolder, String s) {
+            baseViewHolder.setText(R.id.tv_title,s);
+        }
     }
 
-    @Override
-    protected void convert(@NotNull BaseViewHolder baseViewHolder, String s) {
-        baseViewHolder.setText(R.id.tv_title,s);
-    }
 }

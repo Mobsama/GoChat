@@ -12,4 +12,11 @@
     <color name="gray2">#FF8A8A8A</color>
     <color name="white_smoke">#FFF5F5F5</color>
     <color name="red">#FFFF0000</color>
+    <color name="transparent">#00FFFFFF</color>
+    <color name="gary_50">#FFFAFAFA</color>
+    <color name="gary_100">#FFF5F5F5</color>
+    <color name="gary_200">#FFEEEEEE</color>
+    <color name="gary_300">#FFE0E0E0</color>
+    <color name="gary_400">#FFBDBDBD</color>
+    <color name="gary_500">#FF9E9E9E</color>
 </resources>

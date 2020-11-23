@@ -14,12 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GoChat"
         tools:targetApi="n">
-        <activity android:name=".InfoActivity"/>
+        <activity android:name=".InfoActivity"
+            android:launchMode="singleTask"/>
         <activity
-            android:name=".ChatActivity" />
+            android:name=".ChatActivity"
+            android:launchMode="singleTask"/>
         <activity
-            android:name=".MainActivity"
-            android:label="@string/title_activity_main">
+            android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

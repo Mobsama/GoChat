@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chat_rv_emotion"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/chat_fab_emotion"
+        android:layout_width="@dimen/dp_60"
+        android:layout_height="@dimen/dp_60"
+        android:layout_gravity="bottom|end"
+        app:fabCustomSize="@dimen/dp_60"
+        android:layout_marginBottom="@dimen/dp_10"
+        android:layout_marginEnd="@dimen/dp_10"
+        android:backgroundTint="@color/white"
+        app:borderWidth="0dp"
+        android:src="@drawable/ic_back_white_24dp" />
+
+</FrameLayout>

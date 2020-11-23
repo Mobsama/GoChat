@@ -13,8 +13,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.billy.android.swipe.SmartSwipe;
-import com.billy.android.swipe.SwipeConsumer;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.github.promeg.pinyinhelper.Pinyin;
@@ -86,7 +84,7 @@ public class BuddyFragment extends Fragment {
         });
         StickyDecoration stickyDecoration = new StickyDecoration(getContext(),models);
         mSRVBuddy.addItemDecoration(stickyDecoration);
-        BuddyAdapter buddyAdapter = new BuddyAdapter(R.layout.list_item_buddy,models);
+        BuddyAdapter buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item,models);
 
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
             SwipeMenuItem remarksItem = new SwipeMenuItem(getContext());
@@ -134,18 +132,17 @@ public class BuddyFragment extends Fragment {
         mSRVBuddy.setAdapter(buddyAdapter);
         return root;
     }
-}
 
+    class BuddyAdapter extends BaseQuickAdapter<SortModel, BaseViewHolder> {
 
+        public BuddyAdapter(int layoutResId, List data) {
+            super(layoutResId, data);
+        }
 
-class BuddyAdapter extends BaseQuickAdapter<SortModel, BaseViewHolder> {
-
-    public BuddyAdapter(int layoutResId, List data) {
-        super(layoutResId, data);
-    }
-
-    @Override
-    protected void convert(@NotNull BaseViewHolder baseViewHolder, SortModel sortModel) {
-        baseViewHolder.setText(R.id.tv_buddy_user,sortModel.getName());
+        @Override
+        protected void convert(@NotNull BaseViewHolder baseViewHolder, SortModel sortModel) {
+            baseViewHolder.setText(R.id.tv_buddy_user,sortModel.getName());
+        }
     }
 }
+
