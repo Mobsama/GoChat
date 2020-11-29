@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".Main.MsgFragment">
+    tools:context=".view.ui.main.MsgFragment">
 
     <com.yanzhenjie.recyclerview.SwipeRecyclerView
         android:id="@+id/srv_msg"

@@ -13,10 +13,10 @@ import android.os.IBinder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.mob.gochat.User.LoginActivity;
-import com.mob.gochat.Util.HttpClientUtil;
-import com.mob.gochat.WebSocket.JWebSocketClient;
-import com.mob.gochat.WebSocket.JWebSocketClientService;
+import com.mob.gochat.view.ui.login.LoginActivity;
+import com.mob.gochat.utils.HttpClientUtil;
+import com.mob.gochat.websocket.JWebSocketClient;
+import com.mob.gochat.websocket.JWebSocketClientService;
 
 import java.util.HashMap;
 

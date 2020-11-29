@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="58dp"
-    tools:context=".Main.BuddyFragment">
+    tools:context=".view.ui.main.BuddyFragment">
 
     <com.yanzhenjie.recyclerview.SwipeRecyclerView
         android:id="@+id/srv_buddy"
@@ -23,7 +23,7 @@
         android:textSize="30sp"
         android:visibility="invisible"/>
 
-    <com.mob.gochat.CustomizeView.SideBarView
+    <com.mob.gochat.view.ui.customizeview.SideBarView
         android:layout_marginTop="70dp"
         android:layout_marginBottom="70dp"
         android:id="@+id/sb_buddy"

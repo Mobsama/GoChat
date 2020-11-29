@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_msg"
-        android:name="com.mob.gochat.Main.MsgFragment"
+        android:name="com.mob.gochat.view.ui.main.MsgFragment"
         android:label="@string/title_msg"
         tools:layout="@layout/fragment_msg" />
 
     <fragment
         android:id="@+id/navigation_buddy"
-        android:name="com.mob.gochat.Main.BuddyFragment"
+        android:name="com.mob.gochat.view.ui.main.BuddyFragment"
         android:label="@string/title_buddy"
         tools:layout="@layout/fragment_buddy" />
 
     <fragment
         android:id="@+id/navigation_mine"
-        android:name="com.mob.gochat.Main.MineFragment"
+        android:name="com.mob.gochat.view.ui.main.MineFragment"
         android:label="@string/title_mine"
         tools:layout="@layout/fragment_mine" />
 </navigation>

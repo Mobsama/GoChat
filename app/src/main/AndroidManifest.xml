@@ -15,12 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GoChat"
         tools:targetApi="n">
-        <activity android:name=".Chat.PicActivity"></activity>
+        <activity android:name=".view.ui.chat.PicActivity"></activity>
         <activity
-            android:name=".Chat.InfoActivity"
+            android:name=".view.ui.InfoActivity"
             android:launchMode="singleTask" />
         <activity
-            android:name=".Chat.ChatActivity"
+            android:name=".view.ui.chat.ChatActivity"
             android:launchMode="singleTask" />
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -30,16 +30,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".User.ForgotPassActivity"
-            android:parentActivityName=".User.LoginActivity" />
+            android:name=".view.ui.login.ForgotPassActivity"
+            android:parentActivityName=".view.ui.login.LoginActivity" />
         <activity android:name=".Main2Activity" />
         <activity
-            android:name=".User.RegisterActivity"
-            android:parentActivityName=".User.LoginActivity" />
-        <activity android:name=".User.LoginActivity" />
+            android:name=".view.ui.login.RegisterActivity"
+            android:parentActivityName=".view.ui.login.LoginActivity" />
+        <activity android:name=".view.ui.login.LoginActivity" />
 
         <service
-            android:name=".WebSocket.JWebSocketClientService"
+            android:name=".websocket.JWebSocketClientService"
             android:enabled="true" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />

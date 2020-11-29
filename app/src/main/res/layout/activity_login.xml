@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fillViewport="true"
-    tools:context=".User.LoginActivity">
+    tools:context=".view.ui.login.LoginActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/CL_main"
@@ -83,7 +83,7 @@
                     android:inputType="textPassword"
                     android:maxLines="1"
                     android:background="@null"/>
-                <com.mob.gochat.CustomizeView.TimingTextView
+                <com.mob.gochat.view.ui.customizeview.TimingTextView
                     android:id="@+id/tv_forgot"
                     android:paddingRight="5dp"
                     android:textColor="@color/teal"
