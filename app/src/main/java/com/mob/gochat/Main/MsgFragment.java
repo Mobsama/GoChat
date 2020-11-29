@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
-import com.mob.gochat.ChatActivity;
+import com.mob.gochat.Chat.ChatActivity;
 import com.mob.gochat.R;
 import com.mob.gochat.Util.ClickUtil;
 import com.yanzhenjie.recyclerview.OnItemMenuClickListener;

@@ -79,7 +79,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/gray"/>
+                android:background="@color/grey"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -96,7 +96,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/gray"/>
+                android:background="@color/grey"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -112,7 +112,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/gray"/>
+                android:background="@color/grey"/>
 
             <EditText
                 android:layout_width="match_parent"

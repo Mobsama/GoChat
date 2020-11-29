@@ -1,4 +1,4 @@
-package com.mob.gochat;
+package com.mob.gochat.Chat;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,8 +17,8 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.billy.android.swipe.SmartSwipe;
@@ -30,8 +31,8 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.entity.MultiItemEntity;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.effective.android.panel.PanelSwitchHelper;
-import com.effective.android.panel.interfaces.PanelHeightMeasurer;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.mob.gochat.R;
 import com.mob.gochat.Util.EmotionUtil;
 import com.mob.gochat.Util.SpanStringUtils;
 
@@ -48,8 +49,8 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView mRVChat;
     private FloatingActionButton mFABDelete;
     private EditText mETChat;
-    private ImageView mIVAdd, mIVVoice;
-    private Button mBtnSend;
+    private ImageButton mBtnSend;
+    private ImageView mIVPic;
 
     private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
@@ -57,13 +58,9 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             if(TextUtils.isEmpty(mETChat.getText())){
-                mIVAdd.setVisibility(View.VISIBLE);
                 mBtnSend.setEnabled(false);
-                mBtnSend.setVisibility(View.GONE);
             }else{
-                mIVAdd.setVisibility(View.GONE);
                 mBtnSend.setEnabled(true);
-                mBtnSend.setVisibility(View.VISIBLE);
             }
         }
         @Override
@@ -74,6 +71,12 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        SmartSwipe.wrap(this)
+                .addConsumer(new ActivitySlidingBackConsumer(this))
+                .enableDirection(SwipeConsumer.DIRECTION_LEFT)
+                .setEdgeSize(100);
         findViewById();
         initView();
     }
@@ -83,21 +86,6 @@ public class ChatActivity extends AppCompatActivity {
         super.onStart();
         if(mHelper == null){
             mHelper = new PanelSwitchHelper.Builder(this)
-                    .addPanelHeightMeasurer(new PanelHeightMeasurer() {
-                        @Override
-                        public boolean synchronizeKeyboardHeight() {
-                            return false;
-                        }
-                        @Override
-                        public int getTargetPanelDefaultHeight() {
-                            return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                    80,getResources().getDisplayMetrics());
-                        }
-                        @Override
-                        public int getPanelTriggerId() {
-                            return R.id.chat_btn_add;
-                        }
-                    })
                     .build();
         }
     }
@@ -124,22 +112,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        SmartSwipe.wrap(this)
-                .addConsumer(new ActivitySlidingBackConsumer(this))
-                .enableDirection(SwipeConsumer.DIRECTION_LEFT)
-                .setEdgeSize(100)
-                .addListener(new SimpleSwipeListener() {
-                    @Override
-                    public void onSwipeOpened(SmartSwipeWrapper wrapper, SwipeConsumer consumer, int direction) {
-                        if (mHelper != null) {
-                            mHelper.hookSystemBackByPanelSwitcher();
-                        }
-                        super.onSwipeOpened(wrapper, consumer, direction);
-                    }
-                });
-
         mETChat.addTextChangedListener(mTextWatcher);
 
         mRVEmotion.setLayoutManager(new GridLayoutManager(this, 7));
@@ -156,7 +128,6 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         mFABDelete.setOnClickListener(v -> mETChat.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)));
-
         mRVEmotion.setAdapter(emotionAdapter);
 
 
@@ -165,25 +136,39 @@ public class ChatActivity extends AppCompatActivity {
         mRVChat.setLayoutManager(chatManager);
         List<ChatModel> chatData = new ArrayList<>();
         ChatAdapter chatAdapter = new ChatAdapter(chatData);
+
         mBtnSend.setOnClickListener(v -> {
-            ChatModel chat = new ChatModel(mETChat.getText()
-                    ,new Random().nextInt(2));
-            chatData.add(chat);
+            ChatModel chatModel = new ChatModel(mETChat.getText(),new Random().nextInt(2));
+            chatData.add(chatModel);
             chatAdapter.notifyDataSetChanged();
             chatManager.scrollToPosition(chatData.size()-1);
             mETChat.setText("");
         });
+
+        chatAdapter.addChildClickViewIds(R.id.chat_iv_item_fri, R.id.chat_iv_item_mine);
+        chatAdapter.setOnItemChildClickListener((adapter, view, position) -> {
+            if (view.getId() == R.id.chat_iv_item_fri){
+                Intent intent = new Intent(ChatActivity.this, InfoActivity.class);
+                startActivity(intent);
+            }
+        });
+
         mRVChat.setAdapter(chatAdapter);
+
+        mIVPic.setOnClickListener(v -> {
+            Intent intent = new Intent(this,PicActivity.class);
+            startActivity(intent);
+        });
     }
 
     void findViewById(){
         mRVEmotion = findViewById(R.id.chat_rv_emotion);
         mFABDelete = findViewById(R.id.chat_fab_emotion);
-        mIVAdd = findViewById(R.id.chat_btn_add);
         mETChat = findViewById(R.id.chat_edit);
-        mIVVoice = findViewById(R.id.chat_btn_voice);
-        mBtnSend = findViewById(R.id.chat_btn_send);
         mRVChat = findViewById(R.id.chat_rv_chat);
+        mBtnSend = findViewById(R.id.chat_btn_send);
+        mBtnSend.setEnabled(false);
+        mIVPic = findViewById(R.id.chat_btn_pic);
     }
 
     class EmotionAdapter extends BaseQuickAdapter<Integer, BaseViewHolder> {
@@ -239,7 +224,9 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * 为表情面板添加底部留白
+     */
     class EmotionDecoration extends RecyclerView.ItemDecoration{
         @Override
         public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {

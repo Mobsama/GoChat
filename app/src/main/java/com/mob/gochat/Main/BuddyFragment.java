@@ -18,7 +18,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.github.promeg.pinyinhelper.Pinyin;
 import com.mob.gochat.CustomizeView.SideBarView;
 import com.mob.gochat.CustomizeView.StickyDecoration;
-import com.mob.gochat.InfoActivity;
+import com.mob.gochat.Chat.InfoActivity;
 import com.mob.gochat.Model.SortModel;
 import com.mob.gochat.R;
 import com.mob.gochat.Util.ClickUtil;
@@ -88,7 +88,7 @@ public class BuddyFragment extends Fragment {
 
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
             SwipeMenuItem remarksItem = new SwipeMenuItem(getContext());
-            remarksItem.setBackground(R.color.gray);
+            remarksItem.setBackground(R.color.grey);
             remarksItem.setText("备注");
             remarksItem.setTextColor(Color.WHITE);
             remarksItem.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);

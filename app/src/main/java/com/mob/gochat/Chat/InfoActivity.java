@@ -1,4 +1,4 @@
-package com.mob.gochat;
+package com.mob.gochat.Chat;
 
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -9,6 +9,7 @@ import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SmartSwipeBack;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
+import com.mob.gochat.R;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
