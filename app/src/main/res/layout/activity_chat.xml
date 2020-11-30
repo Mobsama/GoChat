@@ -18,7 +18,8 @@
             android:id="@+id/chat_relative_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:edit_view="@id/chat_edit">
+            app:edit_view="@id/chat_edit"
+            app:auto_reset_area="@id/chat_relative_content">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:background="@color/grey_200"

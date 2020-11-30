@@ -64,7 +64,7 @@ public class PicActivity extends AppCompatActivity {
                 mBtnSend.setEnabled(false);
             }else{
                 if(choose != -1) {
-                    data.get(position).setChoose(false);
+                    data.get(choose).setChoose(false);
                 }
                 choose = position;
                 data.get(position).setChoose(true);
@@ -75,7 +75,7 @@ public class PicActivity extends AppCompatActivity {
 
         mRVPic.setAdapter(picAdapter);
         mBtnSend.setOnClickListener(v -> {
-            ToastUtil.showMsg(this,data.get(choose).getPicPath());
+            ToastUtil.showMsg(this,choose+"");
         });
         loadImages();
     }

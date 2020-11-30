@@ -17,6 +17,6 @@ public class PicModel{
     }
 
     public void setChoose(boolean choose) {
-        isChoose = choose;
+        this.isChoose = choose;
     }
 }
