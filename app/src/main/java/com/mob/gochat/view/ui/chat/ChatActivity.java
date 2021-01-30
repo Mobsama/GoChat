@@ -3,15 +3,20 @@ package com.mob.gochat.view.ui.chat;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -20,8 +25,6 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AnimationUtils;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,20 +32,32 @@ import android.widget.TextView;
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.effective.android.panel.PanelSwitchHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.interfaces.XPopupImageLoader;
+import com.mob.gochat.databinding.ActivityChatBinding;
+import com.mob.gochat.databinding.ChatPanelEmotionLayoutBinding;
+import com.mob.gochat.databinding.ChatPanelVoiceLayoutBinding;
 import com.mob.gochat.model.MsgModel;
 import com.mob.gochat.R;
+import com.mob.gochat.model.PicModel;
 import com.mob.gochat.utils.EmotionUtil;
 import com.mob.gochat.utils.SpanStringUtils;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
-import com.mob.gochat.view.ui.InfoActivity;
-import com.mob.gochat.view.ui.customizeview.EmotionDecoration;
+import com.mob.gochat.view.adapter.PicAdapter;
+import com.mob.gochat.view.ui.info.InfoActivity;
+import com.mob.gochat.view.ui.view.EmotionDecoration;
 import com.mob.gochat.viewmodel.ChatViewModel;
 
 
+import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,47 +66,56 @@ import java.util.concurrent.TimeUnit;
 public class ChatActivity extends AppCompatActivity {
 
     private PanelSwitchHelper mHelper;
-    private RecyclerView mRVEmotion;
-    private RecyclerView mRVChat;
-    private FloatingActionButton mFABDelete;
-    private EditText mETChat;
-    private ImageButton mBtnSend,mBtnVoice;
-    private ImageView mIVPic;
-    private TextView mVoiceTime;
+    @NonNull
+    protected ActivityChatBinding binding;
 
-    private ChatViewModel chatViewModel;
+    private RecyclerView mRVEmotion;
+    private FloatingActionButton mFABDelete;
+    private ImageButton mBtnVoice;
+    TextView mVoiceTime;
+
+
+    ChatViewModel chatViewModel;
     private ChatAdapter chatAdapter;
     private LinearLayoutManager chatManager;
     private EmotionAdapter emotionAdapter;
-    private long mStartVoiceTime;
-    private ChatHandle chatHandle = new ChatHandle(this);
+    long mStartVoiceTime;
+    private final ChatHandle chatHandle = new ChatHandle(this);
     private ScheduledExecutorService scheduledExecutor;
-
-    private final TextWatcher mTextWatcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            mBtnSend.setEnabled(!TextUtils.isEmpty(mETChat.getText()));
-        }
-        @Override
-        public void afterTextChanged(Editable s) { }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat);
+        binding = ActivityChatBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        findViewById();
         SmartSwipe.wrap(this)
                 .addConsumer(new ActivitySlidingBackConsumer(this))
                 .enableDirection(SwipeConsumer.DIRECTION_LEFT)
                 .setEdgeSize(100);
 
+        TextWatcher mTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.chatBtnSend.setEnabled(!TextUtils.isEmpty(binding.chatEdit.getText()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
+
         chatViewModel = new ViewModelProvider(this).get(ChatViewModel.class);
-        findViewById();
-        mETChat.addTextChangedListener(mTextWatcher);
+
+        binding.chatBtnSend.setEnabled(false);
+
+        binding.chatEdit.addTextChangedListener(mTextWatcher);
         initEmotionRecycleView();
         initChatRecycleView();
         initOnClickListener();
@@ -126,14 +150,9 @@ public class ChatActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    void findViewById(){
+    private void findViewById(){
         mRVEmotion = findViewById(R.id.chat_rv_emotion);
         mFABDelete = findViewById(R.id.chat_fab_emotion);
-        mETChat = findViewById(R.id.chat_edit);
-        mRVChat = findViewById(R.id.chat_rv_chat);
-        mBtnSend = findViewById(R.id.chat_btn_send);
-        mBtnSend.setEnabled(false);
-        mIVPic = findViewById(R.id.chat_btn_pic);
         mBtnVoice = findViewById(R.id.chat_panel_voice_btn);
         mVoiceTime = findViewById(R.id.chat_panel_voice_tv_time);
     }
@@ -144,39 +163,63 @@ public class ChatActivity extends AppCompatActivity {
         mFABDelete.setOnTouchListener(new EmotionDelBtnOnTouchListener());
 
         //发送按钮点击事件
-        mBtnSend.setOnClickListener(v -> {
-            MsgModel msgModel = new MsgModel(mETChat.getText(),new Random().nextInt(2));
+        binding.chatBtnSend.setOnClickListener(v -> {
+            MsgModel msgModel = new MsgModel(binding.chatEdit.getText(),new Random().nextInt(2), MsgModel.TEXT);
             chatViewModel.addMsg(msgModel);
-            mETChat.setText("");
+            binding.chatEdit.setText("");
         });
 
         //聊天头像点击事件
-        chatAdapter.addChildClickViewIds(R.id.chat_iv_item_fri, R.id.chat_iv_item_mine);
+        chatAdapter.addChildClickViewIds(R.id.chat_iv_item_fri, R.id.chat_iv_item_mine, R.id.chat_pic_item_fri, R.id.chat_pic_item_mine);
         chatAdapter.setOnItemChildClickListener((adapter, view, position) -> {
+            Log.d("click","----------click----------");
             if (view.getId() == R.id.chat_iv_item_fri){
                 Intent intent = new Intent(ChatActivity.this, InfoActivity.class);
                 startActivity(intent);
+            }
+            else if(view.getId() == R.id.chat_pic_item_fri || view.getId() == R.id.chat_pic_item_mine){
+                MsgModel msgModel = (MsgModel)adapter.getItem(position);
+                new XPopup.Builder(this)
+                        .asImageViewer((ImageView) view,msgModel.getMsg(),new ImageLoader())
+                        .isShowSaveButton(false)
+                        .show();
             }
         });
 
         //表情面板中的表情的点击事件
         emotionAdapter.setOnItemClickListener((adapter, view, position) -> {
             String emotionName = EmotionUtil.getEmotionMap().keyAt(position);
-            int curPosition = mETChat.getSelectionStart();
-            StringBuilder sb = new StringBuilder(mETChat.getText().toString());
+            int curPosition = binding.chatEdit.getSelectionStart();
+            StringBuilder sb = new StringBuilder(binding.chatEdit.getText().toString());
             sb.insert(curPosition, emotionName);
-            mETChat.setText(SpanStringUtils.getEmotionContent(ChatActivity.this, mETChat, sb.toString()));
-            mETChat.setSelection(curPosition + emotionName.length());
+            binding.chatEdit.setText(SpanStringUtils.getEmotionContent(ChatActivity.this, binding.chatEdit, sb.toString()));
+            binding.chatEdit.setSelection(curPosition + emotionName.length());
         });
 
         //照片图标点击事件
-        mIVPic.setOnClickListener(v -> {
-            Intent intent = new Intent(this,PicActivity.class);
-            startActivity(intent);
+        binding.chatBtnPic.setOnClickListener(v -> {
+            PicFragment picFragment = new PicFragment();
+            picFragment.show(getSupportFragmentManager(),"PIC");
         });
 
         //录音按钮点击事件
         mBtnVoice.setOnTouchListener(new VoiceBtnOnTouchListener());
+    }
+
+    class ImageLoader implements XPopupImageLoader{
+
+        @Override
+        public void loadImage(int position, @NonNull Object uri, @NonNull ImageView imageView) {
+            Glide.with(imageView)
+                    .load(uri)
+                    .apply(new RequestOptions().override(Target.SIZE_ORIGINAL))
+                    .into(imageView);
+        }
+
+        @Override
+        public File getImageFile(@NonNull Context context, @NonNull Object uri) {
+            return null;
+        }
     }
 
     private void initEmotionRecycleView(){
@@ -189,41 +232,43 @@ public class ChatActivity extends AppCompatActivity {
     private void initChatRecycleView(){
         chatManager = new LinearLayoutManager(this);
         chatManager.setStackFromEnd(true);
-        mRVChat.setLayoutManager(chatManager);
+        binding.chatRvChat.setLayoutManager(chatManager);
         chatAdapter = new ChatAdapter(chatViewModel.getChatData().getValue());
-        mRVChat.setAdapter(chatAdapter);
+        binding.chatRvChat.setAdapter(chatAdapter);
     }
 
     private void updateUIData(){
         chatAdapter.setList(chatViewModel.getChatData().getValue());
-        mRVChat.setAdapter(chatAdapter);
+        binding.chatRvChat.setAdapter(chatAdapter);
         chatManager.scrollToPosition(chatViewModel.getChatData().getValue().size()-1);
     }
 
     static class ChatHandle extends Handler {
-        private WeakReference<ChatActivity> picActivityWeakReference;
+        private final WeakReference<ChatActivity> chatActivityWeakReference;
         public ChatHandle(ChatActivity chatActivity){
-            picActivityWeakReference = new WeakReference<>(chatActivity);
+            chatActivityWeakReference = new WeakReference<>(chatActivity);
         }
 
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
-            ChatActivity chatActivity = picActivityWeakReference.get();
-            if(msg.what==1){
-                long time = System.currentTimeMillis() - chatActivity.mStartVoiceTime;
-                String min = time / 60000 >= 10 ? time / 60000 + "" : "0" + time / 60000;
-                String sec = time / 1000 % 60 >= 10 ? time / 1000 % 60 + "" : "0" + time / 1000 % 60;
-                String ms = time / 10 % 100 >= 10 ? time / 10 % 100 + "" : "0" + time / 10 % 100;
-                chatActivity.mVoiceTime.setText(min+":"+sec+":"+ms);
-            }else if(msg.what == 2){
-                chatActivity.mETChat.dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+            ChatActivity chatActivity = chatActivityWeakReference.get();
+            if(chatActivity != null){
+                if(msg.what==1){
+                    long time = System.currentTimeMillis() - chatActivity.mStartVoiceTime;
+                    String min = time / 60000 >= 10 ? time / 60000 + "" : "0" + time / 60000;
+                    String sec = time / 1000 % 60 >= 10 ? time / 1000 % 60 + "" : "0" + time / 1000 % 60;
+                    String ms = time / 10 % 100 >= 10 ? time / 10 % 100 + "" : "0" + time / 10 % 100;
+                    chatActivity.mVoiceTime.setText(min+":"+sec+":"+ms);
+                }else if(msg.what == 2){
+                    chatActivity.binding.chatEdit.dispatchKeyEvent(
+                            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                }
             }
         }
     }
 
-    private void startVoiceTime(){
+    void startVoiceTime(){
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutor.scheduleWithFixedDelay(() -> {
             Message msg = new Message();
@@ -232,14 +277,14 @@ public class ChatActivity extends AppCompatActivity {
         },0,10, TimeUnit.MILLISECONDS);
     }
 
-    private void stopVoiceTime(){
+    void stopVoiceTime(){
         if(scheduledExecutor != null){
             scheduledExecutor.shutdownNow();
             scheduledExecutor = null;
         }
     }
 
-    private void startEmotionDel(){
+    void startEmotionDel(){
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutor.scheduleWithFixedDelay(() -> {
             Message msg = new Message();
@@ -248,21 +293,21 @@ public class ChatActivity extends AppCompatActivity {
         },0,500, TimeUnit.MILLISECONDS);
     }
 
-    private void stopEmotionDel(){
+    void stopEmotionDel(){
         if(scheduledExecutor != null){
             scheduledExecutor.shutdownNow();
             scheduledExecutor = null;
         }
     }
 
+    @SuppressWarnings("deprecation")
     class VoiceBtnOnTouchListener implements View.OnTouchListener{
         float x=0 , y=0;
-        @SuppressWarnings("deprecation")
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction() == MotionEvent.ACTION_DOWN){
-                v.startAnimation(AnimationUtils
-                        .loadAnimation(ChatActivity.this,R.anim.btn_scale_down));
+                v.setScaleX(0.98f);
+                v.setScaleY(0.98f);
                 mStartVoiceTime = System.currentTimeMillis();
                 x = event.getX();
                 y = event.getY();
@@ -270,28 +315,33 @@ public class ChatActivity extends AppCompatActivity {
             }else if(event.getAction() == MotionEvent.ACTION_MOVE){
                 if(Math.sqrt(Math.pow(event.getX() - x,2)+Math.pow(event.getY() - y,2)) > 200){
                     Log.d("stop","----------stop---------");
+                    v.setScaleX(1f);
+                    v.setScaleY(1f);
                     stopVoiceTime();
                     mVoiceTime.setText("00:00:00");
                 }
             }else if(event.getAction() == MotionEvent.ACTION_UP){
-                v.startAnimation(AnimationUtils
-                        .loadAnimation(ChatActivity.this,R.anim.btn_scale_up));
+                v.setScaleX(1f);
+                v.setScaleY(1f);
                 stopVoiceTime();
                 mVoiceTime.setText("00:00:00");
+                MsgModel msgModel = new MsgModel("",new Random().nextInt(2),MsgModel.VOICE);
+                chatViewModel.addMsg(msgModel);
             }
             return true;
         }
     }
 
     class EmotionDelBtnOnTouchListener implements View.OnTouchListener{
-        @SuppressWarnings("deprecation")
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction() == MotionEvent.ACTION_DOWN){
-                v.startAnimation(AnimationUtils
-                        .loadAnimation(ChatActivity.this,R.anim.btn_scale_down));
+                v.setScaleX(0.98f);
+                v.setScaleY(0.98f);
                 startEmotionDel();
             }else if(event.getAction() == MotionEvent.ACTION_UP){
+                v.setScaleX(1f);
+                v.setScaleY(1f);
                 stopEmotionDel();
             }
             return true;

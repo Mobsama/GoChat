@@ -1,4 +1,4 @@
-package com.mob.gochat.view.ui.customizeview;
+package com.mob.gochat.view.ui.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.TextView;
 
 public class SideBarView extends View {
-    private static String[] text = { "A", "B", "C", "D", "E", "F", "G", "H", "I",
+    private static String[] text = { "↑", "A", "B", "C", "D", "E", "F", "G", "H", "I",
             "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
             "W", "X", "Y", "Z", "#" };
     private TextView mDialog;

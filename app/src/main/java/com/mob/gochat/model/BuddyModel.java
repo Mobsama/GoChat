@@ -25,4 +25,5 @@ public class BuddyModel {
     public String getLetters() {
         return letters;
     }
+    public void setLetters(String letters) { this.letters = letters; }
 }

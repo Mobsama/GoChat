@@ -1,4 +1,4 @@
-package com.mob.gochat.view.ui;
+package com.mob.gochat.view.ui.info;
 
 import android.os.Bundle;
 import android.view.MenuItem;

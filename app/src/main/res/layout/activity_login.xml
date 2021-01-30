@@ -83,7 +83,7 @@
                     android:inputType="textPassword"
                     android:maxLines="1"
                     android:background="@null"/>
-                <com.mob.gochat.view.ui.customizeview.TimingTextView
+                <com.mob.gochat.view.ui.view.TimingTextView
                     android:id="@+id/tv_forgot"
                     android:paddingRight="5dp"
                     android:textColor="@color/teal"

@@ -1,4 +1,4 @@
-package com.mob.gochat.view.ui.customizeview;
+package com.mob.gochat.view.ui.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

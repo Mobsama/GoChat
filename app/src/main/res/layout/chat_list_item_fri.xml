@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -19,11 +20,37 @@
     <TextView
         android:layout_marginTop="@dimen/dp_20"
         android:gravity="center_vertical"
-        android:id="@+id/chat_tv_item_fir"
+        android:id="@+id/chat_tv_item_fri"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxWidth="310dp"
         android:textIsSelectable="true"
-        android:background="@drawable/chat_item_left"/>
+        android:background="@drawable/chat_item_left"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="300dp"
+        android:id="@+id/chat_pic_item_fri"
+        android:layout_marginTop="@dimen/dp_20"
+        android:scaleType="center"
+        android:gravity="center_vertical"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:paddingStart="@dimen/dp_20"
+        android:paddingEnd="@dimen/dp_20"
+        android:paddingTop="@dimen/dp_10"
+        android:paddingBottom="@dimen/dp_10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/chat_voice_item_fri"
+        android:layout_marginTop="@dimen/dp_20"
+        android:scaleType="center"
+        android:gravity="center_vertical"
+        android:background="@drawable/chat_item_left"
+        android:src="@drawable/ic_voice2_white_24dp"
+        app:tint="@color/black"
+        android:visibility="gone"/>
 
 </LinearLayout>

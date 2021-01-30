@@ -13,16 +13,20 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.mob.gochat.view.ui.InfoActivity;
+import com.mob.gochat.model.BuddyModel;
+import com.mob.gochat.view.ui.add.NewBuddyActivity;
+import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.viewmodel.UserViewModel;
-import com.mob.gochat.view.ui.customizeview.SideBarView;
-import com.mob.gochat.view.ui.customizeview.StickyDecoration;
+import com.mob.gochat.view.ui.view.SideBarView;
+import com.mob.gochat.view.ui.view.StickyDecoration;
 import com.mob.gochat.view.adapter.BuddyAdapter;
 import com.mob.gochat.R;
 import com.mob.gochat.utils.ClickUtil;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
 import com.yanzhenjie.recyclerview.SwipeRecyclerView;
+
+import java.util.List;
 
 public class BuddyFragment extends Fragment {
 
@@ -62,8 +66,16 @@ public class BuddyFragment extends Fragment {
         mSRVBuddy.setLayoutManager(buddyManager);
         StickyDecoration stickyDecoration = new StickyDecoration(getContext(),userViewModel.getBuddyData().getValue());
         mSRVBuddy.addItemDecoration(stickyDecoration);
-        buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item,userViewModel.getBuddyData().getValue());
+        BuddyModel newBuddy = new BuddyModel();
+        newBuddy.setName("新的朋友");
+        newBuddy.setLetters("↑");
+        List<BuddyModel> buddyList = userViewModel.getBuddyData().getValue();
+        buddyList.add(0,newBuddy);
+        buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item,buddyList);
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
+            if(position == 0){
+                return;
+            }
             SwipeMenuItem remarksItem = new SwipeMenuItem(getContext());
             remarksItem.setBackground(R.color.grey);
             remarksItem.setText("备注");
@@ -75,7 +87,12 @@ public class BuddyFragment extends Fragment {
 
         mSRVBuddy.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
-                Intent intent = new Intent(getActivity(), InfoActivity.class);
+                Intent intent;
+                if(adapterPosition == 0){
+                    intent = new Intent(getActivity(), NewBuddyActivity.class);
+                }else{
+                    intent = new Intent(getActivity(), InfoActivity.class);
+                }
                 startActivity(intent);
             }
         });

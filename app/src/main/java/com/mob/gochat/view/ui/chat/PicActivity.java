@@ -107,9 +107,12 @@ public class PicActivity extends AppCompatActivity {
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             PicActivity picActivity = picActivityWeakReference.get();
-            if(msg.what==1){
-                picActivity.picAdapter.notifyDataSetChanged();
+            if(picActivity != null){
+                if(msg.what==1){
+                    picActivity.picAdapter.notifyDataSetChanged();
+                }
             }
+
         }
     }
 

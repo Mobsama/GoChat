@@ -1,4 +1,4 @@
-package com.mob.gochat.view.ui.customizeview;
+package com.mob.gochat.view.ui.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -23,8 +23,8 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
     private Paint mPaint;
     private Rect mBounds;
 
-    private static int TITLE_BG_COLOR = Color.parseColor("#FFDFDFDF");
-    private static int TITLE_TEXT_COLOR = Color.parseColor("#FF000000");
+    private static final int TITLE_BG_COLOR = Color.parseColor("#FFDFDFDF");
+    private static final int TITLE_TEXT_COLOR = Color.parseColor("#FF000000");
 
     public StickyDecoration(Context context, List<BuddyModel> data){
         super();
@@ -42,8 +42,9 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
     public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         super.getItemOffsets(outRect, view, parent, state);
         int position = ((RecyclerView.LayoutParams)view.getLayoutParams()).getViewLayoutPosition();
-        if(position == 0
-                || !mData.get(position).getLetters().equals(mData.get(position - 1).getLetters())){
+        if(mData.get(position).getLetters().equals("↑")) return;
+
+        if(!mData.get(position).getLetters().equals(mData.get(position - 1).getLetters())){
             outRect.top = mTitleHeight;
         }
     }
@@ -51,14 +52,13 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
     @Override
     public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         super.onDraw(c, parent, state);
-
         int childCount = parent.getChildCount();
         for(int i = 0; i < childCount; i++){
             View child = parent.getChildAt(i);
             RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
             int position = params.getViewLayoutPosition();
-            if(position == 0
-                    || !mData.get(position).getLetters().equals(mData.get(position - 1).getLetters())){
+            if(mData.get(position).getLetters().equals("↑")) continue;
+            if(!mData.get(position).getLetters().equals(mData.get(position - 1).getLetters())){
                 int left = parent.getPaddingLeft();
                 int right = parent.getWidth() - parent.getPaddingRight();
                 drawTitle(c,left,right,child,params,position);
@@ -82,6 +82,7 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
     public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         super.onDrawOver(c, parent, state);
         int position = ((LinearLayoutManager)(parent.getLayoutManager())).findFirstVisibleItemPosition();
+        if(mData.get(position).getLetters().equals("↑")) return;
         String tag = mData.get(position).getLetters();
         View child = parent.findViewHolderForAdapterPosition(position).itemView;
         boolean flag = false;

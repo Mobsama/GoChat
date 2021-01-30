@@ -19,6 +19,6 @@
         android:layout_marginEnd="@dimen/dp_10"
         android:backgroundTint="@color/white"
         app:borderWidth="0dp"
-        android:src="@drawable/ic_back_white_24dp" />
+        android:src="@drawable/ic_delete_white_24dp" />
 
 </FrameLayout>

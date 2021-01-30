@@ -12,10 +12,10 @@ import androidx.lifecycle.MutableLiveData;
 
 public class UserViewModel extends androidx.lifecycle.ViewModel {
 
-    private MutableLiveData<List<String>> mMsgData = new MutableLiveData<>();
-    private List<String> msgData = new LinkedList<>();
-    private MutableLiveData<List<BuddyModel>> mBuddyData = new MutableLiveData<>();
-    private List<BuddyModel> buddyData = new LinkedList<>();
+    private final MutableLiveData<List<String>> mMsgData = new MutableLiveData<>();
+    private final List<String> msgData = new LinkedList<>();
+    private final MutableLiveData<List<BuddyModel>> mBuddyData = new MutableLiveData<>();
+    private final List<BuddyModel> buddyData = new LinkedList<>();
 
     public MutableLiveData<List<String>> getMsgData() {
         return mMsgData;

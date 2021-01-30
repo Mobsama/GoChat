@@ -45,12 +45,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main,menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
     private void checkPermission() {
         mPermissionList.clear();
         for (int i = 0; i < permissions.length; i++) {
@@ -60,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!mPermissionList.isEmpty()) {
-            String[] permissions = mPermissionList.toArray(new String[mPermissionList.size()]);
+            String[] permissions = mPermissionList.toArray(new String[0]);
             ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSION_REQUEST);
         }
     }

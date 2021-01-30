@@ -2,7 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mob.gochat">
-
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="false"
         android:hardwareAccelerated="true"
@@ -15,9 +20,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GoChat"
         tools:targetApi="n">
-        <activity android:name=".view.ui.chat.PicActivity"></activity>
+        <activity android:name=".view.ui.add.NewBuddyActivity"/>
+        <activity android:name=".view.ui.chat.PicActivity" />
         <activity
-            android:name=".view.ui.InfoActivity"
+            android:name=".view.ui.info.InfoActivity"
             android:launchMode="singleTask" />
         <activity
             android:name=".view.ui.chat.ChatActivity"
@@ -25,7 +31,7 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -42,11 +48,4 @@
             android:name=".websocket.JWebSocketClientService"
             android:enabled="true" />
     </application>
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
 </manifest>

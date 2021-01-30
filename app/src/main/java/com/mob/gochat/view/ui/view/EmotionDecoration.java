@@ -1,8 +1,7 @@
-package com.mob.gochat.view.ui.customizeview;
+package com.mob.gochat.view.ui.view;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.util.TypedValue;
 import android.view.View;
 
 import com.mob.gochat.utils.EmotionUtil;
