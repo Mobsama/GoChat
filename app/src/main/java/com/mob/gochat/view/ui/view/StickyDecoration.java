@@ -8,7 +8,7 @@ import android.graphics.Rect;
 import android.util.TypedValue;
 import android.view.View;
 
-import com.mob.gochat.model.BuddyModel;
+import com.mob.gochat.model.Buddy;
 
 import java.util.List;
 
@@ -19,14 +19,14 @@ import androidx.recyclerview.widget.RecyclerView;
 public class StickyDecoration extends RecyclerView.ItemDecoration{
     private int mTitleHeight;
     private int mTextSize;
-    private List<BuddyModel> mData;
+    private List<Buddy> mData;
     private Paint mPaint;
     private Rect mBounds;
 
     private static final int TITLE_BG_COLOR = Color.parseColor("#FFDFDFDF");
     private static final int TITLE_TEXT_COLOR = Color.parseColor("#FF000000");
 
-    public StickyDecoration(Context context, List<BuddyModel> data){
+    public StickyDecoration(Context context, List<Buddy> data){
         super();
         mData = data;
         mPaint = new Paint();

@@ -1,7 +1,7 @@
 package com.mob.gochat.viewmodel;
 
 import com.github.promeg.pinyinhelper.Pinyin;
-import com.mob.gochat.model.BuddyModel;
+import com.mob.gochat.model.Buddy;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,14 +14,14 @@ public class UserViewModel extends androidx.lifecycle.ViewModel {
 
     private final MutableLiveData<List<String>> mMsgData = new MutableLiveData<>();
     private final List<String> msgData = new LinkedList<>();
-    private final MutableLiveData<List<BuddyModel>> mBuddyData = new MutableLiveData<>();
-    private final List<BuddyModel> buddyData = new LinkedList<>();
+    private final MutableLiveData<List<Buddy>> mBuddyData = new MutableLiveData<>();
+    private final List<Buddy> buddyData = new LinkedList<>();
 
     public MutableLiveData<List<String>> getMsgData() {
         return mMsgData;
     }
 
-    public MutableLiveData<List<BuddyModel>> getBuddyData() {
+    public MutableLiveData<List<Buddy>> getBuddyData() {
         return mBuddyData;
     }
 
@@ -49,8 +49,7 @@ public class UserViewModel extends androidx.lifecycle.ViewModel {
                 "邓银生", "林小七", "uzi", "张飞", "韶关学院地头蛇", "duckingwu", "卢本伟", "高渐离婚",
                 "韶院过江龙欧阳宇豪", "爱新觉罗福泉", "%guozehong", "郭仔凡");
         for(String s : list){
-            BuddyModel model = new BuddyModel();
-            model.setName(s);
+            Buddy model = new Buddy("000",s,"","");
             buddyData.add(model);
         }
         Collections.sort(buddyData, (o1, o2) -> {

@@ -1,9 +1,9 @@
 package com.mob.gochat.model;
 
-public class PicModel{
+public class Pic {
     private boolean isChoose;
     private String picPath;
-    public PicModel(String picPath){
+    public Pic(String picPath){
         isChoose = false;
         this.picPath = picPath;
     }

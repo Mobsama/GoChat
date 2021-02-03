@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.mob.gochat.model.BuddyModel;
+import com.mob.gochat.model.Buddy;
 import com.mob.gochat.view.ui.add.NewBuddyActivity;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.viewmodel.UserViewModel;
@@ -66,10 +66,9 @@ public class BuddyFragment extends Fragment {
         mSRVBuddy.setLayoutManager(buddyManager);
         StickyDecoration stickyDecoration = new StickyDecoration(getContext(),userViewModel.getBuddyData().getValue());
         mSRVBuddy.addItemDecoration(stickyDecoration);
-        BuddyModel newBuddy = new BuddyModel();
-        newBuddy.setName("新的朋友");
+        Buddy newBuddy = new Buddy("0","新的朋友","","");
         newBuddy.setLetters("↑");
-        List<BuddyModel> buddyList = userViewModel.getBuddyData().getValue();
+        List<Buddy> buddyList = userViewModel.getBuddyData().getValue();
         buddyList.add(0,newBuddy);
         buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item,buddyList);
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {

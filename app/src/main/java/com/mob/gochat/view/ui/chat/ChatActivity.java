@@ -3,7 +3,6 @@ package com.mob.gochat.view.ui.chat;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,12 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -40,16 +36,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.XPopupImageLoader;
 import com.mob.gochat.databinding.ActivityChatBinding;
-import com.mob.gochat.databinding.ChatPanelEmotionLayoutBinding;
-import com.mob.gochat.databinding.ChatPanelVoiceLayoutBinding;
-import com.mob.gochat.model.MsgModel;
+import com.mob.gochat.model.Msg;
 import com.mob.gochat.R;
-import com.mob.gochat.model.PicModel;
 import com.mob.gochat.utils.EmotionUtil;
 import com.mob.gochat.utils.SpanStringUtils;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
-import com.mob.gochat.view.adapter.PicAdapter;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.view.EmotionDecoration;
 import com.mob.gochat.viewmodel.ChatViewModel;
@@ -57,7 +49,6 @@ import com.mob.gochat.viewmodel.ChatViewModel;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -164,8 +155,8 @@ public class ChatActivity extends AppCompatActivity {
 
         //发送按钮点击事件
         binding.chatBtnSend.setOnClickListener(v -> {
-            MsgModel msgModel = new MsgModel(binding.chatEdit.getText(),new Random().nextInt(2), MsgModel.TEXT);
-            chatViewModel.addMsg(msgModel);
+//            Msg msg = new Msg(binding.chatEdit.getText(),new Random().nextInt(2), Msg.TEXT);
+//            chatViewModel.addMsg(msg);
             binding.chatEdit.setText("");
         });
 
@@ -178,9 +169,9 @@ public class ChatActivity extends AppCompatActivity {
                 startActivity(intent);
             }
             else if(view.getId() == R.id.chat_pic_item_fri || view.getId() == R.id.chat_pic_item_mine){
-                MsgModel msgModel = (MsgModel)adapter.getItem(position);
+                Msg msg = (Msg)adapter.getItem(position);
                 new XPopup.Builder(this)
-                        .asImageViewer((ImageView) view,msgModel.getMsg(),new ImageLoader())
+                        .asImageViewer((ImageView) view, msg.getMsg(),new ImageLoader())
                         .isShowSaveButton(false)
                         .show();
             }
@@ -325,8 +316,8 @@ public class ChatActivity extends AppCompatActivity {
                 v.setScaleY(1f);
                 stopVoiceTime();
                 mVoiceTime.setText("00:00:00");
-                MsgModel msgModel = new MsgModel("",new Random().nextInt(2),MsgModel.VOICE);
-                chatViewModel.addMsg(msgModel);
+//                Msg msg = new Msg("",new Random().nextInt(2), Msg.VOICE);
+//                chatViewModel.addMsg(msg);
             }
             return true;
         }

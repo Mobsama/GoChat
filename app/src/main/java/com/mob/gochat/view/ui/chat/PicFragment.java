@@ -18,8 +18,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.FragmentPicBinding;
-import com.mob.gochat.model.MsgModel;
-import com.mob.gochat.model.PicModel;
+import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.Pic;
 import com.mob.gochat.view.adapter.PicAdapter;
 import com.mob.gochat.viewmodel.ChatViewModel;
 
@@ -41,7 +41,7 @@ public class PicFragment extends BottomSheetDialogFragment {
 
     private int choose = -1;
     private PicAdapter picAdapter;
-    private List<PicModel> data;
+    private List<Pic> data;
     private final PicHandle picHandle = new PicHandle(this);
     private BottomSheetBehavior behavior;
 
@@ -89,8 +89,8 @@ public class PicFragment extends BottomSheetDialogFragment {
 
         binding.picRv.setAdapter(picAdapter);
         binding.picBtnSend.setOnClickListener(v -> {
-            MsgModel msgModel = new MsgModel(data.get(choose).getPicPath(),new Random().nextInt(2),MsgModel.PIC);
-            chatViewModel.addMsg(msgModel);
+//            Msg msg = new Msg(data.get(choose).getPicPath(),new Random().nextInt(2), Msg.PIC);
+//            chatViewModel.addMsg(msg);
             dismiss();
         });
         binding.picClose.setOnClickListener(v -> {
@@ -171,7 +171,7 @@ public class PicFragment extends BottomSheetDialogFragment {
                         String path = cursor.getString(index);
                         File file = new File(path);
                         if(file.exists()){
-                            picFragment.data.add(new PicModel(path));
+                            picFragment.data.add(new Pic(path));
                         }
                     }
                     cursor.close();

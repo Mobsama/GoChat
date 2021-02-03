@@ -1,6 +1,6 @@
 package com.mob.gochat.viewmodel;
 
-import com.mob.gochat.model.MsgModel;
+import com.mob.gochat.model.Msg;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +8,10 @@ import java.util.List;
 import androidx.lifecycle.MutableLiveData;
 
 public class ChatViewModel extends androidx.lifecycle.ViewModel {
-    private MutableLiveData<List<MsgModel>> mChatData = new MutableLiveData<>();
-    private List<MsgModel> chatData = new ArrayList<>();
+    private MutableLiveData<List<Msg>> mChatData = new MutableLiveData<>();
+    private List<Msg> chatData = new ArrayList<>();
 
-    public MutableLiveData<List<MsgModel>> getChatData() {
+    public MutableLiveData<List<Msg>> getChatData() {
         return mChatData;
     }
 
@@ -19,8 +19,8 @@ public class ChatViewModel extends androidx.lifecycle.ViewModel {
         mChatData.setValue(chatData);
     }
 
-    public void addMsg(MsgModel MsgModel){
-        chatData.add(MsgModel);
+    public void addMsg(Msg Msg){
+        chatData.add(Msg);
         mChatData.postValue(chatData);
     }
 

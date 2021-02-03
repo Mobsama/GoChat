@@ -19,7 +19,7 @@ import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
 import com.mob.gochat.R;
-import com.mob.gochat.model.PicModel;
+import com.mob.gochat.model.Pic;
 import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.adapter.PicAdapter;
 
@@ -34,7 +34,7 @@ public class PicActivity extends AppCompatActivity {
     private Button mBtnSend;
     private int choose = -1;
     private PicAdapter picAdapter;
-    private List<PicModel> data;
+    private List<Pic> data;
     private final PicHandle picHandle = new PicHandle(this);
 
     @Override
@@ -136,7 +136,7 @@ public class PicActivity extends AppCompatActivity {
                         String path = cursor.getString(index);
                         File file = new File(path);
                         if(file.exists()){
-                            picActivity.data.add(new PicModel(path));
+                            picActivity.data.add(new Pic(path));
                         }
                     }
                     cursor.close();
