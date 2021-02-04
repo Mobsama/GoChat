@@ -23,7 +23,7 @@
         android:textSize="30sp"
         android:visibility="invisible"/>
 
-    <com.mob.gochat.view.ui.view.SideBarView
+    <com.mob.gochat.view.ui.widget.SideBarView
         android:layout_marginTop="70dp"
         android:layout_marginBottom="70dp"
         android:id="@+id/sb_buddy"

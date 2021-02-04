@@ -25,7 +25,6 @@ public abstract class RoomDataBase extends RoomDatabase {
                 }
             }
         }
-
         return instance;
     }
 

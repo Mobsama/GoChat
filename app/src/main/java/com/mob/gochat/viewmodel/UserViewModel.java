@@ -48,8 +48,9 @@ public class UserViewModel extends androidx.lifecycle.ViewModel {
                 "赖杰颖", "阿桂", "邓沛锦", "斯内克", "李升辉", "鸭王钟", "关羽", "欧阳宇豪", "高中大馒头",
                 "邓银生", "林小七", "uzi", "张飞", "韶关学院地头蛇", "duckingwu", "卢本伟", "高渐离婚",
                 "韶院过江龙欧阳宇豪", "爱新觉罗福泉", "%guozehong", "郭仔凡");
+        int i = 0;
         for(String s : list){
-            Buddy model = new Buddy("000",s,"","");
+            Buddy model = new Buddy("000" + i++,s,"","");
             buddyData.add(model);
         }
         Collections.sort(buddyData, (o1, o2) -> {

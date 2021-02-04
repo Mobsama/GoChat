@@ -2,6 +2,7 @@ package com.mob.gochat.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
@@ -9,12 +10,15 @@ import com.chad.library.adapter.base.entity.MultiItemEntity;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
 import lombok.Getter;
-import lombok.Setter;
 
-@Entity(tableName = "msg")
+import static androidx.room.ForeignKey.CASCADE;
+
+@Entity(tableName = "msg",
+        foreignKeys = @ForeignKey(entity = Buddy.class,
+                parentColumns = "id",
+                childColumns = "id",
+                onDelete = CASCADE))
 public class Msg implements MultiItemEntity {
     @Ignore
     public static final int FRI = 0;
@@ -53,7 +57,7 @@ public class Msg implements MultiItemEntity {
     @ColumnInfo(name = "time", typeAffinity = ColumnInfo.TEXT)
     private String time;
 
-    public Msg(String uuid, String id, int type, int msgType, String msg, String time){
+    public Msg(@NotNull String uuid, String id, int type, int msgType, String msg, String time){
         this.uuid = uuid;
         this.id = id;
         this.msg = msg;

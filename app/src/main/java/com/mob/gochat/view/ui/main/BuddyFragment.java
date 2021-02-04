@@ -3,74 +3,118 @@ package com.mob.gochat.view.ui.main;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.github.promeg.pinyinhelper.Pinyin;
+import com.lxj.xpopup.XPopup;
+import com.mob.gochat.databinding.FragmentBuddyBinding;
+import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
-import com.mob.gochat.view.ui.add.NewBuddyActivity;
+import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.view.ui.info.InfoActivity;
-import com.mob.gochat.viewmodel.UserViewModel;
-import com.mob.gochat.view.ui.view.SideBarView;
-import com.mob.gochat.view.ui.view.StickyDecoration;
+import com.mob.gochat.view.ui.widget.StickyDecoration;
 import com.mob.gochat.view.adapter.BuddyAdapter;
 import com.mob.gochat.R;
 import com.mob.gochat.utils.ClickUtil;
+import com.mob.gochat.viewmodel.ViewModel;
+import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
-import com.yanzhenjie.recyclerview.SwipeRecyclerView;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BuddyFragment extends Fragment {
 
-    private UserViewModel userViewModel;
-    SwipeRecyclerView mSRVBuddy;
+    private FragmentBuddyBinding binding;
+    private RoomDataBase dataBase;
+    private ViewModel viewModel;
+    List<Buddy> buddies;
     BuddyAdapter buddyAdapter;
     LinearLayoutManager buddyManager;
 
+    List<String> list = Arrays.asList("胡泉源",
+            "李相赫", "唐志明", "朱泽楷", "郑锐轩", "陈继恩", "李旭辉", "詹智聪", "坠毁", "李科",
+            "吴彦祖", "王健成", "张伪娘", "林丰涛", "序伟", "张伪娘", "郑泽芬", "魏法峰", "%guozehong",
+            "我就是大名鼎鼎的鸟人辉了", "欧阳说ok", "一斤", "冼毅贤", "欧阳说ok", "刘启炬", "英语六级小天才胡茄声",
+            "钧仔", "花都嗨", "张伪娘", "男神", "张伪娘", "张伪娘", "张飞", "jcj", "刘大壮", "李素函",
+            "比利王", "龟王李科", "郑泽芬", "吴彦祖", "陈铎友", "?????", "黄家欣", "陈彦儒", "李白",
+            "赖杰颖", "阿桂", "邓沛锦", "斯内克", "李升辉", "鸭王钟", "关羽", "欧阳宇豪", "高中大馒头",
+            "邓银生", "林小七", "uzi", "张飞", "韶关学院地头蛇", "duckingwu", "卢本伟", "高渐离婚",
+            "韶院过江龙欧阳宇豪", "爱新觉罗福泉", "%guozehong", "郭仔凡");
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-        userViewModel.initBuddyData();
-        View root = inflater.inflate(R.layout.fragment_buddy, container, false);
+        binding = FragmentBuddyBinding.inflate(inflater, container, false);
+        dataBase = RoomDataBase.getInstance(getContext());
+        viewModel = new ViewModelProvider(this).get(ViewModel.class);
+        viewModel.getMBuddyData().observe(getViewLifecycleOwner(), buddies -> {
+            this.buddies.clear();
+            this.buddies.addAll(buddies);
+            Collections.sort(this.buddies, (o1, o2) -> {
+                if(o1.getLetters().equals("#") && !o2.getLetters().equals("#")){
+                    return 1;
+                }else if(!o1.getLetters().equals("#") && o2.getLetters().equals("#")){
+                    return -1;
+                }else{
+                    if(!o1.getLetters().equals(o2.getLetters())) {
+                        return o1.getLetters().compareToIgnoreCase(o2.getLetters());
+                    }else{
+                        return Pinyin.toPinyin(o1.getName(),"")
+                                .compareToIgnoreCase(Pinyin.toPinyin(o2.getName(),""));
+                    }
+                }
+            });
+            addNewFriItem();
+            buddyAdapter.notifyDataSetChanged();
+        });
 
-        SideBarView mSideBarView = root.findViewById(R.id.sb_buddy);
-        TextView mDialog = root.findViewById(R.id.tv_dialog);
-        mSideBarView.setDialog(mDialog);
-
-        mSRVBuddy = root.findViewById(R.id.srv_buddy);
+        binding.sbBuddy.setDialog(binding.tvDialog);
         initRecycleView();
 
-        mSideBarView.setOnTouchingListener(s -> {
-            mSRVBuddy.smoothCloseMenu();
-            for(int i = 0; i < userViewModel.getBuddyData().getValue().size(); i++){
-                if(userViewModel.getBuddyData().getValue().get(i).getLetters().equals(s)){
+        binding.sbBuddy.setOnTouchingListener(s -> {
+            binding.srvBuddy.smoothCloseMenu();
+            for(int i = 0; i < buddies.size(); i++){
+                if(buddies.get(i).getLetters().equals(s)){
                     buddyManager.scrollToPositionWithOffset(i,0);
                     break;
                 }
             }
         });
 
-        return root;
+        return binding.getRoot();
+    }
+
+    private void addNewFriItem(){
+        Buddy newBuddy = new Buddy("0","新的朋友","","");
+        newBuddy.setLetters("↑");
+        this.buddies.add(0, newBuddy);
     }
 
     private void initRecycleView(){
         buddyManager = new LinearLayoutManager(getContext());
-        mSRVBuddy.setLayoutManager(buddyManager);
-        StickyDecoration stickyDecoration = new StickyDecoration(getContext(),userViewModel.getBuddyData().getValue());
-        mSRVBuddy.addItemDecoration(stickyDecoration);
-        Buddy newBuddy = new Buddy("0","新的朋友","","");
-        newBuddy.setLetters("↑");
-        List<Buddy> buddyList = userViewModel.getBuddyData().getValue();
-        buddyList.add(0,newBuddy);
-        buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item,buddyList);
+        binding.srvBuddy.setLayoutManager(buddyManager);
+        if(viewModel.getMBuddyData().getValue() != null){
+            buddies = viewModel.getMBuddyData().getValue();
+        }else{
+            buddies = new LinkedList<>();
+        }
+
+        addNewFriItem();
+        StickyDecoration stickyDecoration = new StickyDecoration(getContext(), buddies);
+        binding.srvBuddy.addItemDecoration(stickyDecoration);
+        buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item, buddies);
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
             if(position == 0){
                 return;
@@ -84,19 +128,78 @@ public class BuddyFragment extends Fragment {
             rightMenu.addMenuItem(remarksItem);
         };
 
-        mSRVBuddy.setOnItemClickListener((view, adapterPosition) -> {
+        OnItemMenuClickListener mItemMenuClickListener = (menuBridge, adapterPosition) -> {
+            menuBridge.closeMenu();
+            Buddy buddy = buddies.get(adapterPosition);
+            new XPopup.Builder(getContext()).asInputConfirm(buddy.getName(), "请输入备注：",
+                    text -> {
+                        buddy.setRemarks(text);
+                        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
+                            @Override
+                            public Object doInBackground() throws Throwable {
+                                dataBase.buddyDao().updateBuddy(buddy);
+                                return null;
+                            }
+
+                            @Override
+                            public void onSuccess(Object result) {
+
+                            }
+
+                            @Override
+                            public void onCancel() {
+
+                            }
+
+                            @Override
+                            public void onFail(Throwable t) {
+
+                            }
+                        });
+                    }).show();
+        };
+
+        binding.srvBuddy.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
-                Intent intent;
                 if(adapterPosition == 0){
-                    intent = new Intent(getActivity(), NewBuddyActivity.class);
+//                    intent = new Intent(getActivity(), NewBuddyActivity.class);
+                    int size = viewModel.getMBuddyData().getValue().size();
+                    if(size < list.size()){
+                        Buddy buddy = new Buddy("000"+size,list.get(size),null, null);
+                        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
+                            @Override
+                            public Object doInBackground() throws Throwable {
+                                dataBase.buddyDao().insertBuddy(buddy);
+                                return null;
+                            }
+
+                            @Override
+                            public void onSuccess(Object result) {
+
+                            }
+
+                            @Override
+                            public void onCancel() {
+
+                            }
+
+                            @Override
+                            public void onFail(Throwable t) {
+
+                            }
+                        });
+                    }
+
                 }else{
-                    intent = new Intent(getActivity(), InfoActivity.class);
+                    Intent intent = new Intent(getActivity(), InfoActivity.class);
+                    intent.putExtra("buddy", buddies.get(adapterPosition));
+                    startActivity(intent);
                 }
-                startActivity(intent);
             }
         });
-        mSRVBuddy.setSwipeMenuCreator(mSwipeMenuCreator);
-        mSRVBuddy.setAdapter(buddyAdapter);
+        binding.srvBuddy.setSwipeMenuCreator(mSwipeMenuCreator);
+        binding.srvBuddy.setOnItemMenuClickListener(mItemMenuClickListener);
+        binding.srvBuddy.setAdapter(buddyAdapter);
     }
 }
 

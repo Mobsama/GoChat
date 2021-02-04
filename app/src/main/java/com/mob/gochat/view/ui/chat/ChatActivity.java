@@ -43,13 +43,12 @@ import com.mob.gochat.utils.SpanStringUtils;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
 import com.mob.gochat.view.ui.info.InfoActivity;
-import com.mob.gochat.view.ui.view.EmotionDecoration;
+import com.mob.gochat.view.ui.widget.EmotionDecoration;
 import com.mob.gochat.viewmodel.ChatViewModel;
 
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

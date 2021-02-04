@@ -1,4 +1,4 @@
-package com.mob.gochat.view.ui.view;
+package com.mob.gochat.view.ui.widget;
 
 import android.content.Context;
 import android.graphics.Rect;

@@ -17,6 +17,11 @@ public class BuddyAdapter extends BaseQuickAdapter<Buddy, BaseViewHolder> {
 
     @Override
     protected void convert(@NotNull BaseViewHolder baseViewHolder, Buddy buddy) {
-        baseViewHolder.setText(R.id.tv_buddy_user, buddy.getName());
+        if(buddy.getRemarks() != null && !buddy.getRemarks().equals("")){
+            baseViewHolder.setText(R.id.tv_buddy_user, buddy.getRemarks());
+        }else{
+            baseViewHolder.setText(R.id.tv_buddy_user, buddy.getName());
+        }
+
     }
 }

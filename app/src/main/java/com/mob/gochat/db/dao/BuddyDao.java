@@ -1,9 +1,12 @@
 package com.mob.gochat.db.dao;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.mob.gochat.model.Buddy;
 
@@ -17,8 +20,11 @@ public interface BuddyDao {
     @Delete
     void deleteBuddy(Buddy buddy);
 
+    @Update
+    void updateBuddy(Buddy buddy);
+
     @Query("SELECT * FROM buddy")
-    List<Buddy> getBuddyList();
+    LiveData<List<Buddy>> getBuddyList();
 
     @Query("SELECT * FROM buddy WHERE id = :id")
     Buddy getBuddyById(String id);

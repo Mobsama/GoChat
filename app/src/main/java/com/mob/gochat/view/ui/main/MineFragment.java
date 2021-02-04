@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.interfaces.OnSelectListener;
 import com.lxj.xpopupext.listener.CityPickerListener;
 import com.lxj.xpopupext.listener.TimePickerListener;
 import com.lxj.xpopupext.popup.CityPickerPopup;
@@ -17,6 +18,7 @@ import com.lxj.xpopupext.popup.TimePickerPopup;
 import com.mob.gochat.databinding.FragmentMineBinding;
 import com.mob.gochat.viewmodel.UserViewModel;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -44,10 +46,14 @@ public class MineFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if(v == binding.llMineGender){
-
+            new XPopup.Builder(getContext())
+                    .asBottomList("请选择性别", new String[]{"男", "女", "保密"},
+                            (position, text) -> {
+                                binding.tvMineGender.setText(text);
+                            }).show();
         }else if(v == binding.llMineBirthday){
             Calendar date = Calendar.getInstance();
-            date.set(2000,1,1);
+            date.set(2000,0,1);
             TimePickerPopup popup = new TimePickerPopup(getContext())
                     .setDefaultDate(date)
                     .setTimePickerListener(new TimePickerListener() {
@@ -58,7 +64,8 @@ public class MineFragment extends Fragment implements View.OnClickListener {
 
                         @Override
                         public void onTimeConfirm(Date date, View view) {
-                            binding.tvMineBirthday.setText(date.toString());
+                            SimpleDateFormat format = new SimpleDateFormat("yyyy - MM - dd");
+                            binding.tvMineBirthday.setText(format.format(date));
                         }
                     });
             new XPopup.Builder(getContext())

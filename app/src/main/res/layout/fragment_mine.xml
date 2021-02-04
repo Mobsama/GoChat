@@ -162,12 +162,6 @@
                 android:layout_weight="1"
                 android:id="@+id/tv_mine_address"/>
 
-            <View
-                android:layout_gravity="bottom"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/grey"/>
-
         </LinearLayout>
 
     </LinearLayout>
