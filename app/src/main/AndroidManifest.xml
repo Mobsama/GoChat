@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application
+        android:name=".App"
         android:allowBackup="false"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,7 +22,6 @@
         android:theme="@style/Theme.GoChat"
         tools:targetApi="n">
         <activity android:name=".view.ui.add.NewBuddyActivity"/>
-        <activity android:name=".view.ui.chat.PicActivity" />
         <activity
             android:name=".view.ui.info.InfoActivity"
             android:launchMode="singleTask" />

@@ -7,6 +7,8 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.chad.library.adapter.base.entity.MultiItemEntity;
+import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.MMKVUitl;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -15,10 +17,16 @@ import lombok.Getter;
 import static androidx.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "msg",
-        foreignKeys = @ForeignKey(entity = Buddy.class,
+        foreignKeys = {
+            @ForeignKey(entity = Buddy.class,
                 parentColumns = "id",
-                childColumns = "id",
-                onDelete = CASCADE))
+                childColumns = "from_id",
+                onDelete = CASCADE),
+            @ForeignKey(entity = Buddy.class,
+                parentColumns = "id",
+                childColumns = "to_id",
+                onDelete = CASCADE)
+        })
 public class Msg implements MultiItemEntity {
     @Ignore
     public static final int FRI = 0;
@@ -38,12 +46,12 @@ public class Msg implements MultiItemEntity {
     private String uuid;
 
     @Getter
-    @ColumnInfo(name = "id", typeAffinity = ColumnInfo.TEXT)
-    private String id;
+    @ColumnInfo(name = "from_id", typeAffinity = ColumnInfo.TEXT)
+    private String fromId;
 
     @Getter
-    @ColumnInfo(name = "type", typeAffinity = ColumnInfo.INTEGER)
-    private int type;
+    @ColumnInfo(name = "to_id", typeAffinity = ColumnInfo.TEXT)
+    private String toId;
 
     @Getter
     @ColumnInfo(name = "msg_type", typeAffinity = ColumnInfo.INTEGER)
@@ -57,13 +65,22 @@ public class Msg implements MultiItemEntity {
     @ColumnInfo(name = "time", typeAffinity = ColumnInfo.TEXT)
     private String time;
 
-    public Msg(@NotNull String uuid, String id, int type, int msgType, String msg, String time){
+    @Ignore
+    private int type;
+
+    public Msg(@NotNull String uuid, String fromId, String toId, int msgType, String msg, String time){
         this.uuid = uuid;
-        this.id = id;
+        this.fromId = fromId;
+        this.toId = toId;
         this.msg = msg;
-        this.type = type;
         this.msgType = msgType;
         this.time = time;
+
+        if(fromId.equals(MMKVUitl.getString(DataKeyConst.USER_ID))){
+            this.type = MINE;
+        }else{
+            this.type = FRI;
+        }
     }
 
     @Ignore

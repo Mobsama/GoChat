@@ -23,9 +23,9 @@ public interface BuddyDao {
     @Update
     void updateBuddy(Buddy buddy);
 
-    @Query("SELECT * FROM buddy")
-    LiveData<List<Buddy>> getBuddyList();
+    @Query("SELECT * FROM buddy WHERE Buddy.user=:id AND Buddy.id!=:id")
+    LiveData<List<Buddy>> getBuddyList(String id);
 
-    @Query("SELECT * FROM buddy WHERE id = :id")
+    @Query("SELECT * FROM buddy WHERE id=:id")
     Buddy getBuddyById(String id);
 }

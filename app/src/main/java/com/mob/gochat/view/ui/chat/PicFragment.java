@@ -18,26 +18,20 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.FragmentPicBinding;
-import com.mob.gochat.model.Msg;
 import com.mob.gochat.model.Pic;
 import com.mob.gochat.view.adapter.PicAdapter;
-import com.mob.gochat.viewmodel.ChatViewModel;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 public class PicFragment extends BottomSheetDialogFragment {
     private FragmentPicBinding binding;
-
-    private ChatViewModel chatViewModel;
 
     private int choose = -1;
     private PicAdapter picAdapter;
@@ -65,7 +59,6 @@ public class PicFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        chatViewModel = new ViewModelProvider(getActivity()).get(ChatViewModel.class);
         data = new LinkedList<>();
         picAdapter = new PicAdapter(R.layout.pic_list_item,data);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),4);

@@ -16,13 +16,19 @@ import org.jetbrains.annotations.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity(tableName = "buddy", indices = {@Index(value = {"id"},unique = true)})
+@Entity(tableName = "buddy",
+        primaryKeys = {"id", "user"},
+        indices = {@Index(value = {"id"},unique = true)})
 public class Buddy implements Parcelable {
     @Getter
     @NotNull
-    @PrimaryKey
     @ColumnInfo(name = "id", typeAffinity = ColumnInfo.TEXT)
     private final String id;
+
+    @NotNull
+    @Getter
+    @ColumnInfo(name = "user", typeAffinity = ColumnInfo.TEXT)
+    private final String user;
 
     @Setter
     @Getter
@@ -63,8 +69,9 @@ public class Buddy implements Parcelable {
     @Ignore
     private String letters;
 
-    public Buddy(@NotNull String id, String name, String avatar, String mail){
+    public Buddy(@NotNull String id, @NotNull String user, String name, String avatar, String mail){
         this.id = id;
+        this.user = user;
         this.name = name;
         this.avatar = avatar;
         this.mail = mail;
@@ -97,6 +104,7 @@ public class Buddy implements Parcelable {
     @Ignore
     protected Buddy(Parcel in) {
         id = in.readString();
+        user = in.readString();
         avatar = in.readString();
         name = in.readString();
         mail = in.readString();
@@ -117,6 +125,7 @@ public class Buddy implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
+        dest.writeString(user);
         dest.writeString(avatar);
         dest.writeString(name);
         dest.writeString(mail);

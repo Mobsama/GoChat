@@ -13,38 +13,48 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.mob.gochat.databinding.FragmentMsgBinding;
+import com.mob.gochat.db.RoomDataBase;
+import com.mob.gochat.model.Msg;
 import com.mob.gochat.view.ui.chat.ChatActivity;
-import com.mob.gochat.viewmodel.UserViewModel;
 import com.mob.gochat.view.adapter.MsgAdapter;
 import com.mob.gochat.R;
 import com.mob.gochat.utils.ClickUtil;
+import com.mob.gochat.viewmodel.ViewModel;
 import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
 import com.yanzhenjie.recyclerview.SwipeRecyclerView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MsgFragment extends Fragment {
-    UserViewModel userViewModel;
-    SwipeRecyclerView mSRVMsg;
+    ViewModel viewModel;
+    List<Msg> msgs;
+    RoomDataBase dataBase;
+    FragmentMsgBinding binding;
     MsgAdapter adapter;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-        userViewModel.initMsgData();
-
-        View root = inflater.inflate(R.layout.fragment_msg, container, false);
-        mSRVMsg = root.findViewById(R.id.srv_msg);
+        binding = FragmentMsgBinding.inflate(inflater,container,false);
+        viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
 
         initRecyclerView();
 
-        userViewModel.getMsgData().observe(getViewLifecycleOwner(), strings -> updateUIData());
-        return root;
+        viewModel.getMMsgData().observe(getActivity(), msgs -> {
+            this.msgs.clear();
+            this.msgs.addAll(msgs);
+            this.adapter.notifyDataSetChanged();
+        });
+        return binding.getRoot();
     }
 
     private void initRecyclerView(){
-        mSRVMsg.setLayoutManager(new LinearLayoutManager(getContext()));
-        mSRVMsg.addItemDecoration(new DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL));
-        adapter = new MsgAdapter(R.layout.msg_list_item,userViewModel.getMsgData().getValue());
+        binding.srvMsg.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.srvMsg.addItemDecoration(new DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL));
+        initMsgs();
+        adapter = new MsgAdapter(R.layout.msg_list_item,msgs);
 
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
             SwipeMenuItem deleteItem = new SwipeMenuItem(getContext());
@@ -61,25 +71,28 @@ public class MsgFragment extends Fragment {
             int direction = menuBridge.getDirection();
             int menuPosition = menuBridge.getPosition();
             if(direction == SwipeRecyclerView.RIGHT_DIRECTION && menuPosition == 0){
-                userViewModel.removeMsgData(adapterPosition);
+
             }
         };
 
-        mSRVMsg.setOnItemClickListener((view, adapterPosition) -> {
+        binding.srvMsg.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
                 Intent intent = new Intent(getActivity(), ChatActivity.class);
+                Msg msg = msgs.get(adapterPosition);
                 startActivity(intent);
             }
         });
 
-        mSRVMsg.setOnItemMenuClickListener(mMenuItemClickListener);
-        mSRVMsg.setSwipeMenuCreator(mSwipeMenuCreator);
-        mSRVMsg.setAdapter(adapter);
+        binding.srvMsg.setOnItemMenuClickListener(mMenuItemClickListener);
+        binding.srvMsg.setSwipeMenuCreator(mSwipeMenuCreator);
+        binding.srvMsg.setAdapter(adapter);
     }
 
-    private void updateUIData(){
-        adapter.setList(userViewModel.getMsgData().getValue());
-        mSRVMsg.setAdapter(adapter);
+    private void initMsgs(){
+        msgs = viewModel.getMMsgData().getValue();
+        if(msgs == null){
+            msgs = new ArrayList();
+        }
     }
 
 }

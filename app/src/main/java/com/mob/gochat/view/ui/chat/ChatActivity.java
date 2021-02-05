@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -36,19 +37,29 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.XPopupImageLoader;
 import com.mob.gochat.databinding.ActivityChatBinding;
+import com.mob.gochat.db.RoomDataBase;
+import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.R;
+import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.EmotionUtil;
+import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.SpanStringUtils;
+import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.EmotionDecoration;
-import com.mob.gochat.viewmodel.ChatViewModel;
+import com.mob.gochat.viewmodel.ViewModel;
 
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -62,24 +73,32 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView mRVEmotion;
     private FloatingActionButton mFABDelete;
     private ImageButton mBtnVoice;
-    TextView mVoiceTime;
-
-
-    ChatViewModel chatViewModel;
+    private Buddy buddy;
+    private RoomDataBase dataBase;
+    private ViewModel viewModel;
+    private List<Msg> msgs;
     private ChatAdapter chatAdapter;
     private LinearLayoutManager chatManager;
     private EmotionAdapter emotionAdapter;
-    long mStartVoiceTime;
     private final ChatHandle chatHandle = new ChatHandle(this);
     private ScheduledExecutorService scheduledExecutor;
+
+    long mStartVoiceTime;
+    TextView mVoiceTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        buddy = getIntent().getParcelableExtra("buddy");
+        if(buddy == null){
+            finish();
+            return;
+        }
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle(buddy.getName());
         findViewById();
         SmartSwipe.wrap(this)
                 .addConsumer(new ActivitySlidingBackConsumer(this))
@@ -101,15 +120,20 @@ public class ChatActivity extends AppCompatActivity {
             }
         };
 
-        chatViewModel = new ViewModelProvider(this).get(ChatViewModel.class);
-
+        viewModel = new ViewModelProvider(this).get(ViewModel.class);
+        dataBase = RoomDataBase.getInstance(this);
         binding.chatBtnSend.setEnabled(false);
 
         binding.chatEdit.addTextChangedListener(mTextWatcher);
         initEmotionRecycleView();
         initChatRecycleView();
         initOnClickListener();
-        chatViewModel.getChatData().observe(this, msgModels -> updateUIData());
+        viewModel.getChatMsgData(buddy.getId()).observe(this,msgs -> {
+            this.msgs.clear();
+            this.msgs.addAll(msgs);
+            chatAdapter.notifyDataSetChanged();
+            chatManager.scrollToPosition(this.msgs.size()-1);
+        });
     }
 
     @Override
@@ -154,6 +178,15 @@ public class ChatActivity extends AppCompatActivity {
 
         //发送按钮点击事件
         binding.chatBtnSend.setOnClickListener(v -> {
+            String uuid = UUID.randomUUID().toString();
+            Msg msg;
+            Date date = new Date(System.currentTimeMillis());
+            if(new Random().nextInt(2) == 0){
+                msg = new Msg(uuid,buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID),Msg.TEXT,binding.chatEdit.getText().toString(), date.toString());
+            }else{
+                msg = new Msg(uuid,MMKVUitl.getString(DataKeyConst.USER_ID),buddy.getId() ,Msg.TEXT,binding.chatEdit.getText().toString(), date.toString());
+            }
+            insertMsg(msg);
 //            Msg msg = new Msg(binding.chatEdit.getText(),new Random().nextInt(2), Msg.TEXT);
 //            chatViewModel.addMsg(msg);
             binding.chatEdit.setText("");
@@ -162,7 +195,6 @@ public class ChatActivity extends AppCompatActivity {
         //聊天头像点击事件
         chatAdapter.addChildClickViewIds(R.id.chat_iv_item_fri, R.id.chat_iv_item_mine, R.id.chat_pic_item_fri, R.id.chat_pic_item_mine);
         chatAdapter.setOnItemChildClickListener((adapter, view, position) -> {
-            Log.d("click","----------click----------");
             if (view.getId() == R.id.chat_iv_item_fri){
                 Intent intent = new Intent(ChatActivity.this, InfoActivity.class);
                 startActivity(intent);
@@ -196,7 +228,32 @@ public class ChatActivity extends AppCompatActivity {
         mBtnVoice.setOnTouchListener(new VoiceBtnOnTouchListener());
     }
 
-    class ImageLoader implements XPopupImageLoader{
+    private void insertMsg(Msg msg){
+        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
+            @Override
+            public Object doInBackground() throws Throwable {
+                dataBase.msgDao().insertMsg(msg);
+                return null;
+            }
+
+            @Override
+            public void onSuccess(Object result) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onFail(Throwable t) {
+
+            }
+        });
+    }
+
+    private class ImageLoader implements XPopupImageLoader{
 
         @Override
         public void loadImage(int position, @NonNull Object uri, @NonNull ImageView imageView) {
@@ -223,14 +280,16 @@ public class ChatActivity extends AppCompatActivity {
         chatManager = new LinearLayoutManager(this);
         chatManager.setStackFromEnd(true);
         binding.chatRvChat.setLayoutManager(chatManager);
-        chatAdapter = new ChatAdapter(chatViewModel.getChatData().getValue());
+        initMsgs();
+        chatAdapter = new ChatAdapter(msgs);
         binding.chatRvChat.setAdapter(chatAdapter);
     }
 
-    private void updateUIData(){
-        chatAdapter.setList(chatViewModel.getChatData().getValue());
-        binding.chatRvChat.setAdapter(chatAdapter);
-        chatManager.scrollToPosition(chatViewModel.getChatData().getValue().size()-1);
+    private void initMsgs(){
+        msgs = viewModel.getChatMsgData(buddy.getId()).getValue();
+        if(msgs == null){
+            msgs = new ArrayList<>();
+        }
     }
 
     static class ChatHandle extends Handler {

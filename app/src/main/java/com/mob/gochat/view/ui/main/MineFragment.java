@@ -7,16 +7,13 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.lxj.xpopup.XPopup;
-import com.lxj.xpopup.interfaces.OnSelectListener;
 import com.lxj.xpopupext.listener.CityPickerListener;
 import com.lxj.xpopupext.listener.TimePickerListener;
 import com.lxj.xpopupext.popup.CityPickerPopup;
 import com.lxj.xpopupext.popup.TimePickerPopup;
 import com.mob.gochat.databinding.FragmentMineBinding;
-import com.mob.gochat.viewmodel.UserViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -24,14 +21,11 @@ import java.util.Date;
 
 public class MineFragment extends Fragment implements View.OnClickListener {
 
-    private UserViewModel userViewModel;
     private FragmentMineBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentMineBinding.inflate(inflater, container, false);
-        userViewModel =
-                new ViewModelProvider(this).get(UserViewModel.class);
         binding.tvMineGender.setText("你你你");
         binding.tvMineBirthday.setText("你你你");
         binding.tvMineAddress.setText("你你你");

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -19,6 +20,8 @@ import com.lxj.xpopup.XPopup;
 import com.mob.gochat.databinding.FragmentBuddyBinding;
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.StickyDecoration;
@@ -30,6 +33,8 @@ import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -58,8 +63,8 @@ public class BuddyFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentBuddyBinding.inflate(inflater, container, false);
         dataBase = RoomDataBase.getInstance(getContext());
-        viewModel = new ViewModelProvider(this).get(ViewModel.class);
-        viewModel.getMBuddyData().observe(getViewLifecycleOwner(), buddies -> {
+        viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
+        viewModel.getMBuddyData().observe(getActivity(), buddies -> {
             this.buddies.clear();
             this.buddies.addAll(buddies);
             Collections.sort(this.buddies, (o1, o2) -> {
@@ -97,7 +102,7 @@ public class BuddyFragment extends Fragment {
     }
 
     private void addNewFriItem(){
-        Buddy newBuddy = new Buddy("0","新的朋友","","");
+        Buddy newBuddy = new Buddy("0","0","新的朋友","","");
         newBuddy.setLetters("↑");
         this.buddies.add(0, newBuddy);
     }
@@ -134,28 +139,7 @@ public class BuddyFragment extends Fragment {
             new XPopup.Builder(getContext()).asInputConfirm(buddy.getName(), "请输入备注：",
                     text -> {
                         buddy.setRemarks(text);
-                        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-                            @Override
-                            public Object doInBackground() throws Throwable {
-                                dataBase.buddyDao().updateBuddy(buddy);
-                                return null;
-                            }
-
-                            @Override
-                            public void onSuccess(Object result) {
-
-                            }
-
-                            @Override
-                            public void onCancel() {
-
-                            }
-
-                            @Override
-                            public void onFail(Throwable t) {
-
-                            }
-                        });
+                        buddyDao(buddy,update);
                     }).show();
         };
 
@@ -163,31 +147,10 @@ public class BuddyFragment extends Fragment {
             if(!ClickUtil.isFastDoubleClick()){
                 if(adapterPosition == 0){
 //                    intent = new Intent(getActivity(), NewBuddyActivity.class);
-                    int size = viewModel.getMBuddyData().getValue().size();
+                    int size = buddies.size();
                     if(size < list.size()){
-                        Buddy buddy = new Buddy("000"+size,list.get(size),null, null);
-                        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-                            @Override
-                            public Object doInBackground() throws Throwable {
-                                dataBase.buddyDao().insertBuddy(buddy);
-                                return null;
-                            }
-
-                            @Override
-                            public void onSuccess(Object result) {
-
-                            }
-
-                            @Override
-                            public void onCancel() {
-
-                            }
-
-                            @Override
-                            public void onFail(Throwable t) {
-
-                            }
-                        });
+                        Buddy buddy = new Buddy("000"+size, MMKVUitl.getString(DataKeyConst.USER_ID), list.get(size),null, null);
+                        buddyDao(buddy,insert);
                     }
 
                 }else{
@@ -200,6 +163,39 @@ public class BuddyFragment extends Fragment {
         binding.srvBuddy.setSwipeMenuCreator(mSwipeMenuCreator);
         binding.srvBuddy.setOnItemMenuClickListener(mItemMenuClickListener);
         binding.srvBuddy.setAdapter(buddyAdapter);
+    }
+
+
+    private final static int insert = 1;
+    private final static int update = 0;
+    private void buddyDao(Buddy buddy, int statue){
+        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
+            @Override
+            public Object doInBackground() throws Throwable {
+                if(statue == insert){
+                    dataBase.buddyDao().insertBuddy(buddy);
+                }else if(statue == update){
+                    dataBase.buddyDao().updateBuddy(buddy);
+                }
+
+                return null;
+            }
+
+            @Override
+            public void onSuccess(Object result) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onFail(Throwable t) {
+
+            }
+        });
     }
 }
 

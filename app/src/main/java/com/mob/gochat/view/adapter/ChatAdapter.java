@@ -1,18 +1,22 @@
 package com.mob.gochat.view.adapter;
 
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.mob.gochat.R;
 import com.mob.gochat.model.Msg;
+import com.mob.gochat.utils.SpanStringUtils;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, BaseViewHolder> {
+public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.ChatViewHolder> {
 
     public ChatAdapter(List data){
         super(data);
@@ -21,7 +25,7 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, BaseViewHolder> 
     }
 
     @Override
-    protected void convert(@NotNull BaseViewHolder baseViewHolder, Msg msg) {
+    protected void convert(@NotNull ChatViewHolder baseViewHolder, Msg msg) {
         switch (baseViewHolder.getItemViewType()){
             case Msg.FRI:
                 switch (msg.getMsgType()){
@@ -45,7 +49,7 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, BaseViewHolder> 
             case Msg.MINE:
                 switch (msg.getMsgType()){
                     case Msg.TEXT:
-                        baseViewHolder.setText(R.id.chat_tv_item_mine, msg.getMsg());
+                        baseViewHolder.setText(R.id.chat_tv_item_mine, (CharSequence) msg.getMsg());
                         baseViewHolder.setGone(R.id.chat_tv_item_mine,false);
                         break;
                     case Msg.PIC:
@@ -61,6 +65,21 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, BaseViewHolder> 
                         break;
                 }
                 break;
+        }
+    }
+
+    class ChatViewHolder extends BaseViewHolder{
+
+        public ChatViewHolder(@NotNull View view) {
+            super(view);
+        }
+
+        @NotNull
+        @Override
+        public BaseViewHolder setText(int viewId, @Nullable CharSequence value) {
+            TextView textView = getView(viewId);
+            textView.setText(SpanStringUtils.getEmotionContent(getContext(),textView,value.toString()));
+            return this;
         }
     }
 }

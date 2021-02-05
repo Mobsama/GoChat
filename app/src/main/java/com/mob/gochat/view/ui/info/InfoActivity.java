@@ -1,5 +1,6 @@
 package com.mob.gochat.view.ui.info;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -13,6 +14,7 @@ import com.mob.gochat.databinding.ActivityInfoBinding;
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.ThreadUtils;
+import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.viewmodel.ViewModel;
 
 import androidx.annotation.NonNull;
@@ -20,20 +22,20 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-public class InfoActivity extends AppCompatActivity {
+public class InfoActivity extends AppCompatActivity implements View.OnClickListener {
     private ActivityInfoBinding binding;
-    private ViewModel viewModel;
-    private RoomDataBase dataBase;
     private Buddy buddy;
+    private RoomDataBase dataBase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(ViewModel.class);
         buddy = getIntent().getParcelableExtra("buddy");
         if(buddy == null){
             finish();
+            return;
         }
+        dataBase = RoomDataBase.getInstance(this);
         binding = ActivityInfoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         ActionBar actionBar = getSupportActionBar();
@@ -46,6 +48,8 @@ public class InfoActivity extends AppCompatActivity {
         binding.btnInfoGroup.setVisibility(View.VISIBLE);
         binding.tvInfoName.setText(buddy.getName());
         binding.tvInfoNumber.setText(buddy.getId());
+        binding.btnInfoChat.setOnClickListener(this);
+        binding.btnInfoDelete.setOnClickListener(this);
     }
 
     @Override
@@ -55,6 +59,40 @@ public class InfoActivity extends AppCompatActivity {
                 finish();
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if(v == binding.btnInfoChat){
+            Intent intent = new Intent(this, ChatActivity.class);
+            intent.putExtra("buddy",buddy);
+            startActivity(intent);
+            finish();
+        }else if(v == binding.btnInfoDelete){
+            ThreadUtils.executeByCpu(new ThreadUtils.Task() {
+                @Override
+                public Object doInBackground() throws Throwable {
+                    dataBase.buddyDao().deleteBuddy(buddy);
+                    return null;
+                }
+
+                @Override
+                public void onSuccess(Object result) {
+
+                }
+
+                @Override
+                public void onCancel() {
+
+                }
+
+                @Override
+                public void onFail(Throwable t) {
+
+                }
+            });
+            finish();
         }
     }
 }
