@@ -6,9 +6,11 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.BuddyWithMsgWrapper;
 
 import java.util.List;
 
@@ -28,4 +30,8 @@ public interface BuddyDao {
 
     @Query("SELECT * FROM buddy WHERE id=:id")
     Buddy getBuddyById(String id);
+
+    @Transaction
+    @Query("SELECT * FROM buddy b WHERE b.user=:id AND b.id!=:id AND b.id IN (SELECT DISTINCT buddy_id from msg m WHERE m.user_id = :id )")
+    LiveData<List<BuddyWithMsgWrapper>> getBuddyWithMsg(String id);
 }

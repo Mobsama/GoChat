@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.mob.gochat.databinding.FragmentMsgBinding;
 import com.mob.gochat.db.RoomDataBase;
-import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.BuddyWithMsgWrapper;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.view.adapter.MsgAdapter;
 import com.mob.gochat.R;
@@ -31,7 +31,7 @@ import java.util.List;
 
 public class MsgFragment extends Fragment {
     ViewModel viewModel;
-    List<Msg> msgs;
+    List<BuddyWithMsgWrapper> msgs;
     RoomDataBase dataBase;
     FragmentMsgBinding binding;
     MsgAdapter adapter;
@@ -42,7 +42,7 @@ public class MsgFragment extends Fragment {
 
         initRecyclerView();
 
-        viewModel.getMMsgData().observe(getActivity(), msgs -> {
+        viewModel.getBuddyWithMsgData().observe(getActivity(), msgs -> {
             this.msgs.clear();
             this.msgs.addAll(msgs);
             this.adapter.notifyDataSetChanged();
@@ -78,7 +78,7 @@ public class MsgFragment extends Fragment {
         binding.srvMsg.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
                 Intent intent = new Intent(getActivity(), ChatActivity.class);
-                Msg msg = msgs.get(adapterPosition);
+                intent.putExtra("buddy",msgs.get(adapterPosition).getBuddy());
                 startActivity(intent);
             }
         });
@@ -89,7 +89,7 @@ public class MsgFragment extends Fragment {
     }
 
     private void initMsgs(){
-        msgs = viewModel.getMMsgData().getValue();
+        msgs = viewModel.getBuddyWithMsgData().getValue();
         if(msgs == null){
             msgs = new ArrayList();
         }

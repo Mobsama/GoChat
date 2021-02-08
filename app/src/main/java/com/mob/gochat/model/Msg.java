@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.chad.library.adapter.base.entity.MultiItemEntity;
@@ -20,13 +21,13 @@ import static androidx.room.ForeignKey.CASCADE;
         foreignKeys = {
             @ForeignKey(entity = Buddy.class,
                 parentColumns = "id",
-                childColumns = "from_id",
+                childColumns = "buddy_id",
                 onDelete = CASCADE),
             @ForeignKey(entity = Buddy.class,
                 parentColumns = "id",
-                childColumns = "to_id",
-                onDelete = CASCADE)
-        })
+                childColumns = "user_id",
+                onDelete = CASCADE)},
+        indices = {@Index(value = "buddy_id"), @Index(value = "user_id")})
 public class Msg implements MultiItemEntity {
     @Ignore
     public static final int FRI = 0;
@@ -46,12 +47,12 @@ public class Msg implements MultiItemEntity {
     private String uuid;
 
     @Getter
-    @ColumnInfo(name = "from_id", typeAffinity = ColumnInfo.TEXT)
-    private String fromId;
+    @ColumnInfo(name = "buddy_id", typeAffinity = ColumnInfo.TEXT)
+    private String buddyId;
 
     @Getter
-    @ColumnInfo(name = "to_id", typeAffinity = ColumnInfo.TEXT)
-    private String toId;
+    @ColumnInfo(name = "user_id", typeAffinity = ColumnInfo.TEXT)
+    private String userId;
 
     @Getter
     @ColumnInfo(name = "msg_type", typeAffinity = ColumnInfo.INTEGER)
@@ -65,22 +66,18 @@ public class Msg implements MultiItemEntity {
     @ColumnInfo(name = "time", typeAffinity = ColumnInfo.TEXT)
     private String time;
 
-    @Ignore
+    @Getter
+    @ColumnInfo(name = "type", typeAffinity = ColumnInfo.INTEGER)
     private int type;
 
-    public Msg(@NotNull String uuid, String fromId, String toId, int msgType, String msg, String time){
+    public Msg(@NotNull String uuid, String buddyId, String userId, int type, int msgType, String msg, String time){
         this.uuid = uuid;
-        this.fromId = fromId;
-        this.toId = toId;
+        this.buddyId = buddyId;
+        this.userId = userId;
         this.msg = msg;
         this.msgType = msgType;
         this.time = time;
-
-        if(fromId.equals(MMKVUitl.getString(DataKeyConst.USER_ID))){
-            this.type = MINE;
-        }else{
-            this.type = FRI;
-        }
+        this.type = type;
     }
 
     @Ignore

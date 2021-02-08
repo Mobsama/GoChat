@@ -10,8 +10,9 @@ import com.mob.gochat.db.dao.BuddyDao;
 import com.mob.gochat.db.dao.MsgDao;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.MsgView;
 
-@Database(entities = {Msg.class, Buddy.class}, version = 1)
+@Database(entities = {Msg.class, Buddy.class}, views = {MsgView.class}, version = 1)
 public abstract class RoomDataBase extends RoomDatabase {
     private static final String DATABASE = "database";
     private volatile static RoomDataBase instance;

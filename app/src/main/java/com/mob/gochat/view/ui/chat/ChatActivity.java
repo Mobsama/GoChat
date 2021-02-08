@@ -181,14 +181,8 @@ public class ChatActivity extends AppCompatActivity {
             String uuid = UUID.randomUUID().toString();
             Msg msg;
             Date date = new Date(System.currentTimeMillis());
-            if(new Random().nextInt(2) == 0){
-                msg = new Msg(uuid,buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID),Msg.TEXT,binding.chatEdit.getText().toString(), date.toString());
-            }else{
-                msg = new Msg(uuid,MMKVUitl.getString(DataKeyConst.USER_ID),buddy.getId() ,Msg.TEXT,binding.chatEdit.getText().toString(), date.toString());
-            }
+            msg = new Msg(uuid, buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID), new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString(), date.toString());
             insertMsg(msg);
-//            Msg msg = new Msg(binding.chatEdit.getText(),new Random().nextInt(2), Msg.TEXT);
-//            chatViewModel.addMsg(msg);
             binding.chatEdit.setText("");
         });
 

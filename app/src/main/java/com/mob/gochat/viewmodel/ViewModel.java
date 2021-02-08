@@ -8,24 +8,21 @@ import androidx.lifecycle.LiveData;
 
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
-import com.mob.gochat.model.HomeItem;
+import com.mob.gochat.model.BuddyWithMsgWrapper;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.tencent.mmkv.MMKV;
 
 import java.util.List;
-
-import lombok.Getter;
 
 public class ViewModel extends AndroidViewModel {
     private final RoomDataBase dataBase;
 
-    private LiveData<List<Msg>> mMsgData;
-
     private LiveData<List<Msg>> mChatMsgData;
 
     private LiveData<List<Buddy>> mBuddyData;
+
+    private LiveData<List<BuddyWithMsgWrapper>> mBuddyWithMsgData;
 
     public ViewModel(@NonNull Application application) {
         super(application);
@@ -42,8 +39,8 @@ public class ViewModel extends AndroidViewModel {
         return mBuddyData;
     }
 
-    public LiveData<List<Msg>> getMMsgData() {
-        mMsgData = dataBase.msgDao().getMsgList();
-        return mMsgData;
+    public LiveData<List<BuddyWithMsgWrapper>> getBuddyWithMsgData() {
+        mBuddyWithMsgData = dataBase.buddyDao().getBuddyWithMsg(MMKVUitl.getString(DataKeyConst.USER_ID));
+        return mBuddyWithMsgData;
     }
 }

@@ -20,9 +20,6 @@ public interface MsgDao {
     @Delete
     void deleteMsg(Msg msg);
 
-    @Query("SELECT * FROM msg WHERE (from_id = :id AND to_id=:userId) OR (to_id = :id AND from_id=:userId)")
-    LiveData<List<Msg>> getChatMsgList(String id, String userId);
-
-    @Query("SELECT * FROM msg INNER JOIN buddy ON Msg.from_id=Buddy.id OR Msg.to_id=Buddy.id LIMIT 1")
-    LiveData<List<Msg>> getMsgList();
+    @Query("SELECT * FROM msg WHERE buddy_id=:buddyId AND user_id=:userId")
+    LiveData<List<Msg>> getChatMsgList(String buddyId, String userId);
 }
