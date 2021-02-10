@@ -8,12 +8,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -37,7 +37,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.XPopupImageLoader;
 import com.mob.gochat.databinding.ActivityChatBinding;
-import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.R;
@@ -45,7 +44,6 @@ import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.EmotionUtil;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.SpanStringUtils;
-import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
 import com.mob.gochat.view.ui.info.InfoActivity;
@@ -55,10 +53,12 @@ import com.mob.gochat.viewmodel.ViewModel;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -67,14 +67,12 @@ import java.util.concurrent.TimeUnit;
 public class ChatActivity extends AppCompatActivity {
 
     private PanelSwitchHelper mHelper;
-    @NonNull
     protected ActivityChatBinding binding;
 
     private RecyclerView mRVEmotion;
     private FloatingActionButton mFABDelete;
     private ImageButton mBtnVoice;
     private Buddy buddy;
-    private RoomDataBase dataBase;
     private ViewModel viewModel;
     private List<Msg> msgs;
     private ChatAdapter chatAdapter;
@@ -82,6 +80,7 @@ public class ChatActivity extends AppCompatActivity {
     private EmotionAdapter emotionAdapter;
     private final ChatHandle chatHandle = new ChatHandle(this);
     private ScheduledExecutorService scheduledExecutor;
+    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
 
     long mStartVoiceTime;
     TextView mVoiceTime;
@@ -98,7 +97,11 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle(buddy.getName());
+        if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
+            actionBar.setTitle(buddy.getName());
+        }else{
+            actionBar.setTitle(buddy.getRemarks());
+        }
         findViewById();
         SmartSwipe.wrap(this)
                 .addConsumer(new ActivitySlidingBackConsumer(this))
@@ -121,7 +124,6 @@ public class ChatActivity extends AppCompatActivity {
         };
 
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
-        dataBase = RoomDataBase.getInstance(this);
         binding.chatBtnSend.setEnabled(false);
 
         binding.chatEdit.addTextChangedListener(mTextWatcher);
@@ -131,6 +133,7 @@ public class ChatActivity extends AppCompatActivity {
         viewModel.getChatMsgData(buddy.getId()).observe(this,msgs -> {
             this.msgs.clear();
             this.msgs.addAll(msgs);
+            viewModel.updateMsgStatue(buddy.getId());
             chatAdapter.notifyDataSetChanged();
             chatManager.scrollToPosition(this.msgs.size()-1);
         });
@@ -171,9 +174,9 @@ public class ChatActivity extends AppCompatActivity {
         mVoiceTime = findViewById(R.id.chat_panel_voice_tv_time);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initOnClickListener() {
         //表情面板删除按钮点击事件
-//        mFABDelete.setOnClickListener(v -> mETChat.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)));
         mFABDelete.setOnTouchListener(new EmotionDelBtnOnTouchListener());
 
         //发送按钮点击事件
@@ -181,8 +184,10 @@ public class ChatActivity extends AppCompatActivity {
             String uuid = UUID.randomUUID().toString();
             Msg msg;
             Date date = new Date(System.currentTimeMillis());
-            msg = new Msg(uuid, buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID), new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString(), date.toString());
-            insertMsg(msg);
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            msg = new Msg(uuid, buddy.getId(), userId, new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString(), format.format(date));
+            viewModel.insertMsg(msg);
             binding.chatEdit.setText("");
         });
 
@@ -196,7 +201,7 @@ public class ChatActivity extends AppCompatActivity {
             else if(view.getId() == R.id.chat_pic_item_fri || view.getId() == R.id.chat_pic_item_mine){
                 Msg msg = (Msg)adapter.getItem(position);
                 new XPopup.Builder(this)
-                        .asImageViewer((ImageView) view, msg.getMsg(),new ImageLoader())
+                        .asImageViewer((ImageView) view, msg.getMsg(), new ImageLoader())
                         .isShowSaveButton(false)
                         .show();
             }
@@ -215,39 +220,14 @@ public class ChatActivity extends AppCompatActivity {
         //照片图标点击事件
         binding.chatBtnPic.setOnClickListener(v -> {
             PicFragment picFragment = new PicFragment();
-            picFragment.show(getSupportFragmentManager(),"PIC");
+            picFragment.show(getSupportFragmentManager(),"PIC", buddy);
         });
 
         //录音按钮点击事件
         mBtnVoice.setOnTouchListener(new VoiceBtnOnTouchListener());
     }
 
-    private void insertMsg(Msg msg){
-        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-            @Override
-            public Object doInBackground() throws Throwable {
-                dataBase.msgDao().insertMsg(msg);
-                return null;
-            }
-
-            @Override
-            public void onSuccess(Object result) {
-
-            }
-
-            @Override
-            public void onCancel() {
-
-            }
-
-            @Override
-            public void onFail(Throwable t) {
-
-            }
-        });
-    }
-
-    private class ImageLoader implements XPopupImageLoader{
+    private static class ImageLoader implements XPopupImageLoader{
 
         @Override
         public void loadImage(int position, @NonNull Object uri, @NonNull ImageView imageView) {
@@ -270,20 +250,26 @@ public class ChatActivity extends AppCompatActivity {
         mRVEmotion.setAdapter(emotionAdapter);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initChatRecycleView(){
         chatManager = new LinearLayoutManager(this);
         chatManager.setStackFromEnd(true);
-        binding.chatRvChat.setLayoutManager(chatManager);
+        binding.chatRvMsg.setLayoutManager(chatManager);
         initMsgs();
         chatAdapter = new ChatAdapter(msgs);
-        binding.chatRvChat.setAdapter(chatAdapter);
+        binding.chatRvMsg.setAdapter(chatAdapter);
+        binding.chatRvMsg.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                mHelper.resetState();
+                return false;
+            }
+        });
     }
 
     private void initMsgs(){
-        msgs = viewModel.getChatMsgData(buddy.getId()).getValue();
-        if(msgs == null){
-            msgs = new ArrayList<>();
-        }
+        msgs = new ArrayList<>();
+        viewModel.updateMsgStatue(buddy.getId());
     }
 
     static class ChatHandle extends Handler {
@@ -333,7 +319,7 @@ public class ChatActivity extends AppCompatActivity {
             Message msg = new Message();
             msg.what = 2;
             chatHandle.sendMessage(msg);
-        },0,500, TimeUnit.MILLISECONDS);
+        },0,300, TimeUnit.MILLISECONDS);
     }
 
     void stopEmotionDel(){
@@ -343,7 +329,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressLint("ClickableViewAccessibility")
     class VoiceBtnOnTouchListener implements View.OnTouchListener{
         float x=0 , y=0;
         @Override
@@ -375,6 +361,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     class EmotionDelBtnOnTouchListener implements View.OnTouchListener{
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -390,5 +377,4 @@ public class ChatActivity extends AppCompatActivity {
             return true;
         }
     }
-
 }

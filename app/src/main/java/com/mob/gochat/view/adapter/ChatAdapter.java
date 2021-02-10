@@ -28,10 +28,13 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
     protected void convert(@NotNull ChatViewHolder baseViewHolder, Msg msg) {
         switch (baseViewHolder.getItemViewType()){
             case Msg.FRI:
+                baseViewHolder.setText(R.id.chat_tv_item_fri_time, msg.getTime());
                 switch (msg.getMsgType()){
                     case Msg.TEXT:
                         baseViewHolder.setText(R.id.chat_tv_item_fri, msg.getMsg());
                         baseViewHolder.setGone(R.id.chat_tv_item_fri,false);
+                        baseViewHolder.setGone(R.id.chat_pic_item_fri,true);
+                        baseViewHolder.setGone(R.id.chat_voice_item_fri,true);
                         break;
                     case Msg.PIC:
                         Glide.with(getContext())
@@ -40,17 +43,24 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                                 .placeholder(R.mipmap.ic_placeholder)
                                 .into((ImageView) baseViewHolder.getView(R.id.chat_pic_item_fri));
                         baseViewHolder.setGone(R.id.chat_pic_item_fri,false);
+                        baseViewHolder.setGone(R.id.chat_tv_item_fri,true);
+                        baseViewHolder.setGone(R.id.chat_voice_item_fri,true);
                         break;
                     case Msg.VOICE:
                         baseViewHolder.setGone(R.id.chat_voice_item_fri,false);
+                        baseViewHolder.setGone(R.id.chat_tv_item_fri,true);
+                        baseViewHolder.setGone(R.id.chat_pic_item_fri,true);
                         break;
                 }
                 break;
             case Msg.MINE:
+                baseViewHolder.setText(R.id.chat_tv_item_mine_time, msg.getTime());
                 switch (msg.getMsgType()){
                     case Msg.TEXT:
                         baseViewHolder.setText(R.id.chat_tv_item_mine, (CharSequence) msg.getMsg());
                         baseViewHolder.setGone(R.id.chat_tv_item_mine,false);
+                        baseViewHolder.setGone(R.id.chat_pic_item_mine,true);
+                        baseViewHolder.setGone(R.id.chat_voice_item_mine,true);
                         break;
                     case Msg.PIC:
                         Glide.with(getContext())
@@ -59,9 +69,13 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                                 .placeholder(R.mipmap.ic_placeholder)
                                 .into((ImageView) baseViewHolder.getView(R.id.chat_pic_item_mine));
                         baseViewHolder.setGone(R.id.chat_pic_item_mine,false);
+                        baseViewHolder.setGone(R.id.chat_tv_item_mine,true);
+                        baseViewHolder.setGone(R.id.chat_voice_item_mine,true);
                         break;
                     case Msg.VOICE:
                         baseViewHolder.setGone(R.id.chat_voice_item_mine,false);
+                        baseViewHolder.setGone(R.id.chat_tv_item_mine,true);
+                        baseViewHolder.setGone(R.id.chat_pic_item_mine,true);
                         break;
                 }
                 break;

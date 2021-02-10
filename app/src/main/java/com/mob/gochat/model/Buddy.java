@@ -7,7 +7,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
-import androidx.room.PrimaryKey;
 
 import com.github.promeg.pinyinhelper.Pinyin;
 
@@ -69,12 +68,15 @@ public class Buddy implements Parcelable {
     @Ignore
     private String letters;
 
-    public Buddy(@NotNull String id, @NotNull String user, String name, String avatar, String mail){
+    public Buddy(@NotNull String id, @NotNull String user, String name, String avatar, String mail, String birth, String address, int gender){
         this.id = id;
         this.user = user;
         this.name = name;
         this.avatar = avatar;
         this.mail = mail;
+        this.birth = birth;
+        this.address = address;
+        this.gender = gender;
 
         setLettersWithName(name);
     }

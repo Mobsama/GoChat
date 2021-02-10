@@ -1,24 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingBottom="@dimen/dp_10"
     android:layout_marginTop="@dimen/dp_4"
-    android:gravity="start|top">
+    tools:ignore="SmallSp">
 
     <ImageView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="@dimen/dp_10"
-        android:layout_marginEnd="@dimen/dp_4"
         android:id="@+id/chat_iv_item_fri"
         android:layout_width="@dimen/dp_40"
         android:layout_height="@dimen/dp_40"
         android:background="@drawable/img_avatar_bg"/>
 
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/chat_tv_item_fri_time"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
+        android:layout_marginStart="@dimen/dp_4"
+        android:textColor="@color/grey_400"
+        android:textSize="9sp"/>
+
+    <TextView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
         android:layout_marginTop="@dimen/dp_20"
+        android:layout_marginStart="@dimen/dp_4"
         android:gravity="center_vertical"
         android:id="@+id/chat_tv_item_fri"
         android:layout_width="wrap_content"
@@ -29,15 +43,23 @@
         android:visibility="gone"/>
 
     <ImageView
-        android:layout_width="150dp"
-        android:layout_height="300dp"
-        android:id="@+id/chat_pic_item_fri"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
         android:layout_marginTop="@dimen/dp_20"
-        android:scaleType="center"
+        android:layout_marginStart="@dimen/dp_4"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="true"
+        android:id="@+id/chat_pic_item_fri"
         android:gravity="center_vertical"
         android:visibility="gone"/>
 
     <ImageView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
+        android:layout_marginTop="@dimen/dp_20"
+        android:layout_marginStart="@dimen/dp_4"
         android:paddingStart="@dimen/dp_20"
         android:paddingEnd="@dimen/dp_20"
         android:paddingTop="@dimen/dp_10"
@@ -45,7 +67,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/chat_voice_item_fri"
-        android:layout_marginTop="@dimen/dp_20"
         android:scaleType="center"
         android:gravity="center_vertical"
         android:background="@drawable/chat_item_left"
@@ -53,4 +74,4 @@
         app:tint="@color/black"
         android:visibility="gone"/>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

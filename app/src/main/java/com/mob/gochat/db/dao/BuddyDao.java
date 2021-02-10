@@ -28,8 +28,8 @@ public interface BuddyDao {
     @Query("SELECT * FROM buddy WHERE Buddy.user=:id AND Buddy.id!=:id")
     LiveData<List<Buddy>> getBuddyList(String id);
 
-    @Query("SELECT * FROM buddy WHERE id=:id")
-    Buddy getBuddyById(String id);
+    @Query("SELECT * FROM buddy WHERE id=:BuddyId AND user=:userId")
+    LiveData<Buddy> getBuddyById(String BuddyId, String userId);
 
     @Transaction
     @Query("SELECT * FROM buddy b WHERE b.user=:id AND b.id!=:id AND b.id IN (SELECT DISTINCT buddy_id from msg m WHERE m.user_id = :id )")

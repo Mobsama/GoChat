@@ -14,6 +14,7 @@ import com.mob.gochat.utils.MMKVUitl;
 import org.jetbrains.annotations.NotNull;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import static androidx.room.ForeignKey.CASCADE;
 
@@ -69,6 +70,11 @@ public class Msg implements MultiItemEntity {
     @Getter
     @ColumnInfo(name = "type", typeAffinity = ColumnInfo.INTEGER)
     private int type;
+
+    @Getter
+    @Setter
+    @ColumnInfo(name = "is_read", typeAffinity = ColumnInfo.INTEGER, defaultValue = "0")
+    private boolean isRead;
 
     public Msg(@NotNull String uuid, String buddyId, String userId, int type, int msgType, String msg, String time){
         this.uuid = uuid;

@@ -3,26 +3,22 @@ package com.mob.gochat.view.ui.main;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.github.promeg.pinyinhelper.Pinyin;
 import com.lxj.xpopup.XPopup;
 import com.mob.gochat.databinding.FragmentBuddyBinding;
-import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.StickyDecoration;
 import com.mob.gochat.view.adapter.BuddyAdapter;
@@ -33,17 +29,14 @@ import com.yanzhenjie.recyclerview.OnItemMenuClickListener;
 import com.yanzhenjie.recyclerview.SwipeMenuCreator;
 import com.yanzhenjie.recyclerview.SwipeMenuItem;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 public class BuddyFragment extends Fragment {
 
     private FragmentBuddyBinding binding;
-    private RoomDataBase dataBase;
     private ViewModel viewModel;
     List<Buddy> buddies;
     BuddyAdapter buddyAdapter;
@@ -62,11 +55,11 @@ public class BuddyFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentBuddyBinding.inflate(inflater, container, false);
-        dataBase = RoomDataBase.getInstance(getContext());
         viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
         viewModel.getMBuddyData().observe(getActivity(), buddies -> {
             this.buddies.clear();
             this.buddies.addAll(buddies);
+            ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("联系人（"+(this.buddies.size()+"）"));
             Collections.sort(this.buddies, (o1, o2) -> {
                 if(o1.getLetters().equals("#") && !o2.getLetters().equals("#")){
                     return 1;
@@ -102,7 +95,7 @@ public class BuddyFragment extends Fragment {
     }
 
     private void addNewFriItem(){
-        Buddy newBuddy = new Buddy("0","0","新的朋友","","");
+        Buddy newBuddy = new Buddy("0","0","新的朋友",null,null, null, null, 0);
         newBuddy.setLetters("↑");
         this.buddies.add(0, newBuddy);
     }
@@ -110,12 +103,7 @@ public class BuddyFragment extends Fragment {
     private void initRecycleView(){
         buddyManager = new LinearLayoutManager(getContext());
         binding.srvBuddy.setLayoutManager(buddyManager);
-        if(viewModel.getMBuddyData().getValue() != null){
-            buddies = viewModel.getMBuddyData().getValue();
-        }else{
-            buddies = new LinkedList<>();
-        }
-
+        buddies = new ArrayList<>();
         addNewFriItem();
         StickyDecoration stickyDecoration = new StickyDecoration(getContext(), buddies);
         binding.srvBuddy.addItemDecoration(stickyDecoration);
@@ -139,7 +127,7 @@ public class BuddyFragment extends Fragment {
             new XPopup.Builder(getContext()).asInputConfirm(buddy.getName(), "请输入备注：",
                     text -> {
                         buddy.setRemarks(text);
-                        buddyDao(buddy,update);
+                        viewModel.updateBuddy(buddy);
                     }).show();
         };
 
@@ -149,8 +137,8 @@ public class BuddyFragment extends Fragment {
 //                    intent = new Intent(getActivity(), NewBuddyActivity.class);
                     int size = buddies.size();
                     if(size < list.size()){
-                        Buddy buddy = new Buddy("000"+size, MMKVUitl.getString(DataKeyConst.USER_ID), list.get(size),null, null);
-                        buddyDao(buddy,insert);
+                        Buddy buddy = new Buddy("000"+size, MMKVUitl.getString(DataKeyConst.USER_ID), list.get(size),null, null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
+                        viewModel.insertBuddy(buddy);
                     }
 
                 }else{
@@ -163,39 +151,6 @@ public class BuddyFragment extends Fragment {
         binding.srvBuddy.setSwipeMenuCreator(mSwipeMenuCreator);
         binding.srvBuddy.setOnItemMenuClickListener(mItemMenuClickListener);
         binding.srvBuddy.setAdapter(buddyAdapter);
-    }
-
-
-    private final static int insert = 1;
-    private final static int update = 0;
-    private void buddyDao(Buddy buddy, int statue){
-        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-            @Override
-            public Object doInBackground() throws Throwable {
-                if(statue == insert){
-                    dataBase.buddyDao().insertBuddy(buddy);
-                }else if(statue == update){
-                    dataBase.buddyDao().updateBuddy(buddy);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void onSuccess(Object result) {
-
-            }
-
-            @Override
-            public void onCancel() {
-
-            }
-
-            @Override
-            public void onFail(Throwable t) {
-
-            }
-        });
     }
 }
 

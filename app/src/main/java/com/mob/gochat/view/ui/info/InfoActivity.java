@@ -1,5 +1,6 @@
 package com.mob.gochat.view.ui.info;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,11 +10,10 @@ import android.view.View;
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
-import com.mob.gochat.R;
+import com.lxj.xpopup.XPopup;
 import com.mob.gochat.databinding.ActivityInfoBinding;
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
-import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.viewmodel.ViewModel;
 
@@ -26,7 +26,9 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
     private ActivityInfoBinding binding;
     private Buddy buddy;
     private RoomDataBase dataBase;
+    private ViewModel viewModel;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +37,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
             finish();
             return;
         }
+        viewModel = new ViewModelProvider(this).get(ViewModel.class);
         dataBase = RoomDataBase.getInstance(this);
         binding = ActivityInfoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -46,8 +49,27 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                 .setEdgeSize(100);
 
         binding.btnInfoGroup.setVisibility(View.VISIBLE);
-        binding.tvInfoName.setText(buddy.getName());
-        binding.tvInfoNumber.setText(buddy.getId());
+        binding.btnInfoAdd.setVisibility(View.GONE);
+
+        if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
+            binding.tvInfoName.setText(buddy.getName());
+            binding.tvInfoNickname.setVisibility(View.GONE);
+        }else{
+            binding.tvInfoName.setText(buddy.getRemarks());
+            binding.tvInfoNickname.setText("昵称：" + buddy.getName());
+        }
+
+        binding.tvInfoNumber.setText("GoChat号：" + buddy.getId());
+        if(buddy.getGender() == 0){
+            binding.tvInfoGender.setText("保密");
+        }else if(buddy.getGender() == 1) {
+            binding.tvInfoGender.setText("男");
+        }else if(buddy.getGender() == 2) {
+            binding.tvInfoGender.setText("女");
+        }
+        binding.tvInfoBirthday.setText(buddy.getBirth());
+        binding.tvInfoAddress.setText(buddy.getAddress());
+
         binding.btnInfoChat.setOnClickListener(this);
         binding.btnInfoDelete.setOnClickListener(this);
     }
@@ -70,29 +92,18 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             finish();
         }else if(v == binding.btnInfoDelete){
-            ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-                @Override
-                public Object doInBackground() throws Throwable {
-                    dataBase.buddyDao().deleteBuddy(buddy);
-                    return null;
-                }
-
-                @Override
-                public void onSuccess(Object result) {
-
-                }
-
-                @Override
-                public void onCancel() {
-
-                }
-
-                @Override
-                public void onFail(Throwable t) {
-
-                }
-            });
-            finish();
+            String name;
+            if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
+                name = buddy.getName();
+            }else{
+                name = buddy.getRemarks();
+            }
+            new XPopup.Builder(this).asConfirm(name, "是否要删除"+name+"？",
+                    () -> {
+                        viewModel.deleteBuddy(buddy);
+                        finish();
+                    })
+                    .show();
         }
     }
 }

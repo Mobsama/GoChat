@@ -18,26 +18,40 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.FragmentPicBinding;
+import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.Msg;
 import com.mob.gochat.model.Pic;
+import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.adapter.PicAdapter;
+import com.mob.gochat.viewmodel.ViewModel;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.TimeZone;
+import java.util.UUID;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 public class PicFragment extends BottomSheetDialogFragment {
     private FragmentPicBinding binding;
 
+    private ViewModel viewModel;
     private int choose = -1;
     private PicAdapter picAdapter;
     private List<Pic> data;
     private final PicHandle picHandle = new PicHandle(this);
     private BottomSheetBehavior behavior;
+    private Buddy buddy;
 
     @NonNull
     @Override
@@ -54,6 +68,7 @@ public class PicFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentPicBinding.inflate(inflater,container,false);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
         return binding.getRoot();
     }
 
@@ -82,8 +97,12 @@ public class PicFragment extends BottomSheetDialogFragment {
 
         binding.picRv.setAdapter(picAdapter);
         binding.picBtnSend.setOnClickListener(v -> {
-//            Msg msg = new Msg(data.get(choose).getPicPath(),new Random().nextInt(2), Msg.PIC);
-//            chatViewModel.addMsg(msg);
+            String uuid = UUID.randomUUID().toString();
+            Date date = new Date(System.currentTimeMillis());
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            Msg msg = new Msg(uuid, buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID), new Random().nextInt(2), Msg.PIC, data.get(choose).getPicPath(), format.format(date));
+            viewModel.insertMsg(msg);
             dismiss();
         });
         binding.picClose.setOnClickListener(v -> {
@@ -106,6 +125,11 @@ public class PicFragment extends BottomSheetDialogFragment {
     public void onDestroyView() {
         binding = null;
         super.onDestroyView();
+    }
+
+    public void show(@NonNull FragmentManager manager, @Nullable String tag, Buddy buddy){
+        show(manager, tag);
+        this.buddy = buddy;
     }
 
     private int getPeekHeight() {
@@ -155,7 +179,7 @@ public class PicFragment extends BottomSheetDialogFragment {
             super.run();
             PicFragment picFragment = picFragmentWeakReference.get();
             if(picFragment != null){
-                String order= MediaStore.MediaColumns.DATE_ADDED+" DESC ";
+                String order= MediaStore.MediaColumns.DATE_ADDED + " DESC ";
                 Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 Cursor cursor = picFragment.getActivity().getContentResolver().query(uri,null,null,null,order);
                 if(cursor != null && cursor.getCount() > 0){

@@ -24,13 +24,20 @@ public class MsgAdapter extends BaseQuickAdapter<BuddyWithMsgWrapper, BaseViewHo
         StringBuffer sb = new StringBuffer();
         if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
             baseViewHolder.setText(R.id.tv_title, buddy.getName());
-            sb.append(msg.getType() == Msg.FRI ? buddy.getName()+":" : "我:");
+            sb.append(msg.getType() == Msg.FRI ? buddy.getName()+"：" : "我：");
         }else{
             baseViewHolder.setText(R.id.tv_title, buddy.getRemarks());
-            sb.append(msg.getType() == Msg.FRI ? buddy.getRemarks()+":" : "我:");
+            sb.append(msg.getType() == Msg.FRI ? buddy.getRemarks()+"：" : "我：");
         }
-        sb.append(msg.getMsg());
+        if(msg.getMsgType() == Msg.PIC){
+            sb.append("[图片]");
+        }else if(msg.getMsgType() == Msg.VOICE){
+            sb.append("[语音]");
+        }else{
+            sb.append(msg.getMsg());
+        }
         baseViewHolder.setText(R.id.tv_msg_content, sb.toString());
         baseViewHolder.setText(R.id.tv_msg_time, msg.getTime().substring(11,16));
+        baseViewHolder.setGone(R.id.tv_msg_reddot, msg.isRead());
     }
 }

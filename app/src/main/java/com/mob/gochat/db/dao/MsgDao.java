@@ -20,6 +20,12 @@ public interface MsgDao {
     @Delete
     void deleteMsg(Msg msg);
 
+    @Query("UPDATE msg SET is_read=1 WHERE buddy_id=:buddyId AND user_id=:userId AND is_read=0")
+    void updateMsgStatus(String buddyId, String userId);
+
     @Query("SELECT * FROM msg WHERE buddy_id=:buddyId AND user_id=:userId")
     LiveData<List<Msg>> getChatMsgList(String buddyId, String userId);
+
+    @Query("DELETE FROM msg WHERE msg.buddy_id=:buddyId AND msg.user_id=:userId")
+    void deleteMsgWithBuddyId(String buddyId, String userId);
 }

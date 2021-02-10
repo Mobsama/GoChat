@@ -9,6 +9,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.utils.UIUtil;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class StickyDecoration extends RecyclerView.ItemDecoration{
     private int mTitleHeight;
     private int mTextSize;
+    private int paddingLeft;
     private List<Buddy> mData;
     private Paint mPaint;
     private Rect mBounds;
@@ -31,8 +33,9 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
         mData = data;
         mPaint = new Paint();
         mBounds = new Rect();
-        mTitleHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,30,context.getResources().getDisplayMetrics());
-        mTextSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,16,context.getResources().getDisplayMetrics());
+        mTitleHeight = (int) UIUtil.dp2px(context,30);
+        mTextSize = (int) UIUtil.dp2px(context,16);
+        paddingLeft = (int) UIUtil.dp2px(context,4);
         mPaint.setTextSize(mTextSize);
         mPaint.setAntiAlias(true);
 
@@ -74,7 +77,7 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
 
         mPaint.getTextBounds(mData.get(position).getLetters(), 0, mData.get(position).getLetters().length(), mBounds);
         c.drawText(mData.get(position).getLetters(),
-                child.getPaddingLeft(),
+                child.getPaddingLeft() + paddingLeft,
                 child.getTop() - params.topMargin - (mTitleHeight / 2 - mBounds.height() / 2), mPaint);
     }
 
@@ -102,7 +105,7 @@ public class StickyDecoration extends RecyclerView.ItemDecoration{
                 parent.getPaddingTop() + mTitleHeight, mPaint);
         mPaint.setColor(TITLE_TEXT_COLOR);
         mPaint.getTextBounds(tag, 0, tag.length(), mBounds);
-        c.drawText(tag, child.getPaddingLeft(),
+        c.drawText(tag, child.getPaddingLeft() + paddingLeft,
                 parent.getPaddingTop() + mTitleHeight - (mTitleHeight / 2 - mBounds.height() / 2),
                 mPaint);
         if (flag)

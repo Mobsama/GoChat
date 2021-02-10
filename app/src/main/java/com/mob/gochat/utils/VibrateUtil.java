@@ -5,11 +5,11 @@ import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.Vibrator;
 
-public class vibrateUtil {
+public class VibrateUtil {
     public static void playVibrate(Context context, boolean isRepeat){
         try {
             Vibrator mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-            long[] patern = new long[]{1000, 500, 1000};
+            long[] patern = new long[]{0, 100};
             AudioAttributes audioAttributes = null;
             /**
              * 适配android7.0以上版本的震动

@@ -3,7 +3,6 @@ package com.mob.gochat;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -12,7 +11,6 @@ import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ThreadUtils;
-import com.mob.gochat.viewmodel.ViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import lombok.Getter;
 
 public class MainActivity extends AppCompatActivity {
     String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -53,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
         ThreadUtils.executeByCpu(new ThreadUtils.Task() {
             @Override
             public Object doInBackground() throws Throwable {
-                if(dataBase.buddyDao().getBuddyById("10000") == null){
-                    Buddy buddy = new Buddy("10000", "10000" , "Mob", null,null);
+                if(dataBase.buddyDao().getBuddyById("10000", MMKVUitl.getString(DataKeyConst.USER_ID)) == null){
+                    Buddy buddy = new Buddy("10000", "10000" , "Mob", null,null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
                     dataBase.buddyDao().insertBuddy(buddy);
                 }
                 return null;
@@ -84,9 +80,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermission() {
         mPermissionList.clear();
-        for (int i = 0; i < permissions.length; i++) {
-            if (ContextCompat.checkSelfPermission(this, permissions[i]) != PackageManager.PERMISSION_GRANTED) {
-                mPermissionList.add(permissions[i]);
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                mPermissionList.add(permission);
             }
         }
 
