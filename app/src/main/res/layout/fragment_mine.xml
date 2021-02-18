@@ -84,6 +84,18 @@
             tools:ignore="SmallSp"
             android:visibility="gone"/>
 
+        <Button
+            android:layout_marginStart="@dimen/dp_4"
+            android:id="@+id/btn_mine_cancel"
+            android:layout_width="58dp"
+            android:layout_height="40dp"
+            android:text="取消"
+            android:textSize="11sp"
+            android:layout_gravity="center"
+            tools:ignore="SmallSp"
+            android:backgroundTint="@color/red"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
     <LinearLayout

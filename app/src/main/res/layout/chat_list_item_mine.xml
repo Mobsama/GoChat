@@ -8,14 +8,14 @@
     android:layout_marginTop="@dimen/dp_4"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
+    <com.mob.gochat.view.ui.widget.NiceImageView
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="@dimen/dp_10"
         android:id="@+id/chat_iv_item_mine"
         android:layout_width="@dimen/dp_40"
         android:layout_height="@dimen/dp_40"
-        android:background="@drawable/img_avatar_bg"/>
+        app:corner_radius="@dimen/dp_10"/>
 
     <TextView
         android:layout_width="wrap_content"

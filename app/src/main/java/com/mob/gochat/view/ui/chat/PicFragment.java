@@ -46,7 +46,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 public class PicFragment extends BottomSheetDialogFragment {
     private FragmentPicBinding binding;
 
-    private ViewModel viewModel;
     private int choose = -1;
     private PicAdapter picAdapter;
     private List<Pic> data;
@@ -70,7 +69,6 @@ public class PicFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentPicBinding.inflate(inflater,container,false);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
         return binding.getRoot();
     }
 

@@ -22,7 +22,7 @@ public interface RequestDao {
     @Update
     void updateRequest(Request request);
 
-    @Query("SELECT * FROM request WHERE user_id=:userId")
+    @Query("SELECT * FROM request WHERE user_id=:userId ORDER BY time DESC")
     LiveData<List<Request>> getRequestList(String userId);
 
     @Query("SELECT count(*) FROM request WHERE user_id=:userId AND is_treated=0")

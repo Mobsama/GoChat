@@ -7,15 +7,14 @@
     android:paddingEnd="10dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
+    <com.mob.gochat.view.ui.widget.NiceImageView
         android:id="@+id/new_buddy_avatar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/new_buddy_name"
         android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/img_avatar_bg"/>
+        android:layout_height="40dp"/>
 
     <TextView
         android:layout_marginStart="@dimen/dp_10"

@@ -9,9 +9,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import com.billy.android.swipe.SmartSwipe;
+import com.billy.android.swipe.SwipeConsumer;
+import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityNewBuddyBinding;
+import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Request;
+import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.adapter.NewBuddyAdapter;
 import com.mob.gochat.viewmodel.ViewModel;
 
@@ -23,6 +29,7 @@ public class NewBuddyActivity extends AppCompatActivity {
     private ViewModel viewModel;
     private List<Request> requestList = new ArrayList<>();
     private NewBuddyAdapter adapter;
+    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +38,10 @@ public class NewBuddyActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle("新的朋友");
+        SmartSwipe.wrap(this)
+                .addConsumer(new ActivitySlidingBackConsumer(this))
+                .enableDirection(SwipeConsumer.DIRECTION_LEFT)
+                .setEdgeSize(100);
         initRecyclerView();
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
         viewModel.getRequestData().observe(this, requests -> {
@@ -51,6 +62,8 @@ public class NewBuddyActivity extends AppCompatActivity {
             Request request = requestList.get(position);
             if(view.getId() == R.id.new_buddy_agree){
                 request.setIsTreated(Request.APPROVED);
+                Buddy buddy = new Buddy(request.getBuddyId(), userId, request.getBuddyName(),null, null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
+                viewModel.insertBuddy(buddy);
             }else if(view.getId() == R.id.new_buddy_refuse){
                 request.setIsTreated(Request.REJECTED);
             }

@@ -9,14 +9,14 @@
     android:layout_marginTop="@dimen/dp_4"
     tools:ignore="SmallSp">
 
-    <ImageView
+    <com.mob.gochat.view.ui.widget.NiceImageView
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="@dimen/dp_10"
         android:id="@+id/chat_iv_item_fri"
         android:layout_width="@dimen/dp_40"
         android:layout_height="@dimen/dp_40"
-        android:background="@drawable/img_avatar_bg"/>
+        app:corner_radius="@dimen/dp_10"/>
 
     <TextView
         android:layout_width="wrap_content"

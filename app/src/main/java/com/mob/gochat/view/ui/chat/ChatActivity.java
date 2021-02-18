@@ -36,6 +36,7 @@ import com.effective.android.panel.PanelSwitchHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.XPopupImageLoader;
+import com.mob.gochat.audio.AudioRecordManager;
 import com.mob.gochat.databinding.ActivityChatBinding;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
@@ -137,6 +138,8 @@ public class ChatActivity extends AppCompatActivity {
             chatAdapter.notifyDataSetChanged();
             chatManager.scrollToPosition(this.msgs.size()-1);
         });
+
+        AudioRecordManager.getInstance(this).setAudioSavePath("");
     }
 
     @Override
@@ -236,7 +239,7 @@ public class ChatActivity extends AppCompatActivity {
         mBtnVoice.setOnTouchListener(new VoiceBtnOnTouchListener());
     }
 
-    private static class ImageLoader implements XPopupImageLoader{
+    static class ImageLoader implements XPopupImageLoader{
 
         @Override
         public void loadImage(int position, @NonNull Object uri, @NonNull ImageView imageView) {
@@ -338,30 +341,54 @@ public class ChatActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     class VoiceBtnOnTouchListener implements View.OnTouchListener{
         float x=0 , y=0;
+        final static int start = 0, stop = 1, cancel = 2;
+        int status = stop;
+        boolean isCancel = false;
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction() == MotionEvent.ACTION_DOWN){
                 v.setScaleX(0.98f);
                 v.setScaleY(0.98f);
                 mStartVoiceTime = System.currentTimeMillis();
+                isCancel = false;
                 x = event.getX();
                 y = event.getY();
                 startVoiceTime();
-            }else if(event.getAction() == MotionEvent.ACTION_MOVE){
-                if(Math.sqrt(Math.pow(event.getX() - x,2)+Math.pow(event.getY() - y,2)) > 200){
-                    Log.d("stop","----------stop---------");
-                    v.setScaleX(1f);
-                    v.setScaleY(1f);
-                    stopVoiceTime();
-                    mVoiceTime.setText("00:00:00");
-                }
+                String uuid = UUID.randomUUID().toString();
+                AudioRecordManager.getInstance(ChatActivity.this).startRecord(uuid);
+                status = start;
             }else if(event.getAction() == MotionEvent.ACTION_UP){
                 v.setScaleX(1f);
                 v.setScaleY(1f);
                 stopVoiceTime();
                 mVoiceTime.setText("00:00:00");
+                if(status == start){
+                    AudioRecordManager.getInstance(ChatActivity.this).stopRecord();
+                    status = stop;
+                }
 //                Msg msg = new Msg("",new Random().nextInt(2), Msg.VOICE);
 //                chatViewModel.addMsg(msg);
+            }else if(event.getAction() == MotionEvent.ACTION_CANCEL){
+                v.setScaleX(1f);
+                v.setScaleY(1f);
+                stopVoiceTime();
+                mVoiceTime.setText("00:00:00");
+                if(status == start){
+                    AudioRecordManager.getInstance(ChatActivity.this).stopRecord();
+                    status = stop;
+                }
+            }else if(event.getAction() == MotionEvent.ACTION_MOVE){
+                if(Math.sqrt(Math.pow(event.getX() - x,2)+Math.pow(event.getY() - y,2)) > 200 && !isCancel){
+                    isCancel = true;
+                    v.setScaleX(1f);
+                    v.setScaleY(1f);
+                    stopVoiceTime();
+                    mVoiceTime.setText("00:00:00");
+                    if(status == start){
+                        AudioRecordManager.getInstance(ChatActivity.this).destroyRecord();
+                        status = cancel;
+                    }
+                }
             }
             return true;
         }
