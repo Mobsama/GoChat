@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class BuddyAdapter extends BaseQuickAdapter<Buddy, BaseViewHolder> {
-
     public BuddyAdapter(int layoutResId, List data) {
         super(layoutResId, data);
     }
@@ -18,9 +17,15 @@ public class BuddyAdapter extends BaseQuickAdapter<Buddy, BaseViewHolder> {
     @Override
     protected void convert(@NotNull BaseViewHolder baseViewHolder, Buddy buddy) {
         if(buddy.getRemarks() != null && !buddy.getRemarks().equals("")){
-            baseViewHolder.setText(R.id.tv_buddy_user, buddy.getRemarks());
+            baseViewHolder.setText(R.id.new_buddy_name, buddy.getRemarks());
         }else{
-            baseViewHolder.setText(R.id.tv_buddy_user, buddy.getName());
+            baseViewHolder.setText(R.id.new_buddy_name, buddy.getName());
+        }
+        if(getItemPosition(buddy) == 0 && buddy.getGender() > 0){
+            baseViewHolder.setGone(R.id.new_buddy_untreated_num, false);
+            baseViewHolder.setText(R.id.new_buddy_untreated_num, buddy.getGender() + "");
+        }else {
+            baseViewHolder.setGone(R.id.new_buddy_untreated_num, true);
         }
 
     }

@@ -22,6 +22,7 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
         super(data);
         addItemType(Msg.FRI, R.layout.chat_list_item_fri);
         addItemType(Msg.MINE, R.layout.chat_list_item_mine);
+        addItemType(Msg.OTHER, R.layout.chat_list_item_other);
     }
 
     @Override
@@ -78,6 +79,9 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                         baseViewHolder.setGone(R.id.chat_pic_item_mine,true);
                         break;
                 }
+                break;
+            case Msg.OTHER:
+                baseViewHolder.setText(R.id.chat_tv_other, msg.getMsg());
                 break;
         }
     }

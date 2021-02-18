@@ -35,11 +35,15 @@ public class Msg implements MultiItemEntity {
     @Ignore
     public static final int MINE = 1;
     @Ignore
+    public static final int OTHER = 2;
+    @Ignore
     public static final int TEXT = 0;
     @Ignore
     public static final int PIC = 1;
     @Ignore
     public static final int VOICE = 2;
+    @Ignore
+    public static final int REQUEST = 3;
 
     @Getter
     @NotNull

@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.github.promeg.pinyinhelper.Pinyin;
 import com.lxj.xpopup.XPopup;
 import com.mob.gochat.databinding.FragmentMsgBinding;
 import com.mob.gochat.db.RoomDataBase;
@@ -31,6 +32,7 @@ import com.yanzhenjie.recyclerview.SwipeMenuItem;
 import com.yanzhenjie.recyclerview.SwipeRecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MsgFragment extends Fragment {
@@ -55,6 +57,7 @@ public class MsgFragment extends Fragment {
             }else{
                 binding.srvMsg.setVisibility(View.VISIBLE);
                 binding.tipMsg.setVisibility(View.GONE);
+                Collections.sort(this.buddyWithMsgWrappers, (o1, o2) -> o2.getMsg().get(0).getMsg().getTime().compareToIgnoreCase(o1.getMsg().get(0).getMsg().getTime()));
             }
             this.adapter.notifyDataSetChanged();
         });

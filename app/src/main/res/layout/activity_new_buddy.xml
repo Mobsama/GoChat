@@ -5,29 +5,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.ui.add.NewBuddyActivity"
-    android:background="@color/grey_500">
+    tools:context=".view.ui.add.NewBuddyActivity">
 
     <EditText
-        android:layout_marginStart="@dimen/dp_10"
-        android:layout_marginEnd="@dimen/dp_10"
-        android:layout_marginTop="@dimen/dp_4"
-        android:layout_margin="@dimen/dp_4"
+        android:layout_margin="@dimen/dp_10"
+        android:padding="@dimen/dp_10"
+        android:maxLines="1"
         android:id="@+id/new_buddy_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/new_buddy_btn"
+        android:background="@drawable/new_buddy_et_bg"
+        android:inputType="number"
         android:hint="GoChat号"
-        android:textSize="16sp"
-        android:padding="@dimen/dp_4"/>
+        android:textSize="16sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <Button
+        android:id="@+id/new_buddy_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="搜索"
         app:layout_constraintTop_toBottomOf="@id/new_buddy_search"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/new_buddy_tip"
+        android:layout_margin="@dimen/dp_10"
+        android:background="@drawable/login_btn_bg"/>
+
+    <TextView
+        android:paddingStart="@dimen/dp_10"
+        android:paddingEnd="0dp"
+        android:paddingTop="@dimen/dp_4"
+        android:paddingBottom="@dimen/dp_4"
+        android:background="@color/grey_300"
+        android:id="@+id/new_buddy_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/new_buddy_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/new_buddy_list"
+        android:text="你的好友申请"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/new_buddy_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/new_buddy_tip"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 

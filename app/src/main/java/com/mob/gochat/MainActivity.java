@@ -45,32 +45,33 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         dataBase = RoomDataBase.getInstance(this);
-        MMKVUitl.save(DataKeyConst.USER_ID,"10000");
-        ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-            @Override
-            public Object doInBackground() throws Throwable {
-                if(dataBase.buddyDao().getBuddyById("10000", MMKVUitl.getString(DataKeyConst.USER_ID)) == null){
-                    Buddy buddy = new Buddy("10000", "10000" , "Mob", null,null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
-                    dataBase.buddyDao().insertBuddy(buddy);
-                }
-                return null;
+                new Thread(() -> {
+            if(MMKVUitl.getString(DataKeyConst.USER_ID) == null){
+                ThreadUtils.executeByCpu(new ThreadUtils.Task() {
+                    @Override
+                    public Object doInBackground() throws Throwable {
+                        Buddy buddy = new Buddy("10000", "10000" , "Mob", null,null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
+                        dataBase.buddyDao().insertBuddy(buddy);
+                        MMKVUitl.save(DataKeyConst.USER_ID,"10000");
+                        return null;
+                    }
+
+                    @Override
+                    public void onSuccess(Object result) {
+
+                    }
+
+                    @Override
+                    public void onCancel() {
+                    }
+
+                    @Override
+                    public void onFail(Throwable t) {
+
+                    }
+                });
             }
-
-            @Override
-            public void onSuccess(Object result) {
-
-            }
-
-            @Override
-            public void onCancel() {
-
-            }
-
-            @Override
-            public void onFail(Throwable t) {
-
-            }
-        });
+        }).start();
     }
 
     @Override

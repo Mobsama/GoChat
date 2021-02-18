@@ -19,6 +19,7 @@ import com.mob.gochat.databinding.FragmentBuddyBinding;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
+import com.mob.gochat.view.ui.add.NewBuddyActivity;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.StickyDecoration;
 import com.mob.gochat.view.adapter.BuddyAdapter;
@@ -38,9 +39,11 @@ public class BuddyFragment extends Fragment {
 
     private FragmentBuddyBinding binding;
     private ViewModel viewModel;
-    List<Buddy> buddies;
-    BuddyAdapter buddyAdapter;
-    LinearLayoutManager buddyManager;
+    private List<Buddy> buddies = new ArrayList<>();
+    private BuddyAdapter buddyAdapter;
+    private LinearLayoutManager buddyManager;
+    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private final Buddy newBuddy = new Buddy("0","0","新的朋友",null,null, null, null, 0);
 
     List<String> list = Arrays.asList("胡泉源",
             "李相赫", "唐志明", "朱泽楷", "郑锐轩", "陈继恩", "李旭辉", "詹智聪", "坠毁", "李科",
@@ -55,6 +58,9 @@ public class BuddyFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentBuddyBinding.inflate(inflater, container, false);
+        newBuddy.setLetters("↑");
+        this.buddies.add(0, newBuddy);
+        initRecycleView();
         viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
         viewModel.getMBuddyData().observe(getActivity(), buddies -> {
             this.buddies.clear();
@@ -74,12 +80,18 @@ public class BuddyFragment extends Fragment {
                     }
                 }
             });
-            addNewFriItem();
+            this.buddies.add(0, newBuddy);
             buddyAdapter.notifyDataSetChanged();
         });
-
+        viewModel.getUntreatedRequestNum().observe(getActivity(), num -> {
+            if(num != 0){
+                buddies.remove(0);
+                newBuddy.setGender(num);
+                buddies.add(0, newBuddy);
+                buddyAdapter.notifyDataSetChanged();
+            }
+        });
         binding.sbBuddy.setDialog(binding.tvDialog);
-        initRecycleView();
 
         binding.sbBuddy.setOnTouchingListener(s -> {
             binding.srvBuddy.smoothCloseMenu();
@@ -94,17 +106,9 @@ public class BuddyFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private void addNewFriItem(){
-        Buddy newBuddy = new Buddy("0","0","新的朋友",null,null, null, null, 0);
-        newBuddy.setLetters("↑");
-        this.buddies.add(0, newBuddy);
-    }
-
     private void initRecycleView(){
         buddyManager = new LinearLayoutManager(getContext());
         binding.srvBuddy.setLayoutManager(buddyManager);
-        buddies = new ArrayList<>();
-        addNewFriItem();
         StickyDecoration stickyDecoration = new StickyDecoration(getContext(), buddies);
         binding.srvBuddy.addItemDecoration(stickyDecoration);
         buddyAdapter = new BuddyAdapter(R.layout.buddy_list_item, buddies);
@@ -134,13 +138,19 @@ public class BuddyFragment extends Fragment {
         binding.srvBuddy.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
                 if(adapterPosition == 0){
-//                    intent = new Intent(getActivity(), NewBuddyActivity.class);
-                    int size = buddies.size();
-                    if(size < list.size()){
-                        Buddy buddy = new Buddy("000"+size, MMKVUitl.getString(DataKeyConst.USER_ID), list.get(size),null, null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
-                        viewModel.insertBuddy(buddy);
-                    }
-
+                    Intent intent = new Intent(getActivity(), NewBuddyActivity.class);
+                    startActivity(intent);
+//                    int size = buddies.size();
+//                    if(size < list.size()){
+//                        Buddy buddy = new Buddy("000"+size, MMKVUitl.getString(DataKeyConst.USER_ID), list.get(size),null, null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
+//                        viewModel.insertBuddy(buddy);
+//                    }
+//                    String uuid = UUID.randomUUID().toString();
+//                    Date date = new Date(System.currentTimeMillis());
+//                    @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//                    format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+//                    Request request = new Request(uuid, userId, "10010", "Test", null, format.format(date), Request.UNTREATED);
+//                    viewModel.insertRequest(request);
                 }else{
                     Intent intent = new Intent(getActivity(), InfoActivity.class);
                     intent.putExtra("buddy", buddies.get(adapterPosition));

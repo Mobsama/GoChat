@@ -11,6 +11,7 @@ import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.BuddyWithMsgWrapper;
 import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ThreadUtils;
@@ -20,14 +21,6 @@ import java.util.List;
 public class ViewModel extends AndroidViewModel {
     private final RoomDataBase dataBase;
 
-    private LiveData<List<Msg>> mChatMsgData;
-
-    private LiveData<List<Buddy>> mBuddyData;
-
-    private LiveData<List<BuddyWithMsgWrapper>> mBuddyWithMsgData;
-
-    private LiveData<Buddy> mCurrBuddy;
-
     private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
 
     public ViewModel(@NonNull Application application) {
@@ -36,23 +29,19 @@ public class ViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Msg>> getChatMsgData(String id){
-        this.mChatMsgData = dataBase.msgDao().getChatMsgList(id, userId);
-        return mChatMsgData;
+        return dataBase.msgDao().getChatMsgList(id, userId);
     }
 
     public LiveData<List<Buddy>> getMBuddyData() {
-        mBuddyData = dataBase.buddyDao().getBuddyList(userId);
-        return mBuddyData;
+        return dataBase.buddyDao().getBuddyList(userId);
     }
 
     public LiveData<List<BuddyWithMsgWrapper>> getBuddyWithMsgData() {
-        mBuddyWithMsgData = dataBase.buddyDao().getBuddyWithMsg(userId);
-        return mBuddyWithMsgData;
+        return dataBase.buddyDao().getBuddyWithMsg(userId);
     }
 
     public LiveData<Buddy> getBuddy(String buddyId){
-        mCurrBuddy = dataBase.buddyDao().getBuddyById(buddyId, userId);
-        return mCurrBuddy;
+        return dataBase.buddyDao().getBuddyById(buddyId, userId);
     }
 
     public void insertBuddy(Buddy buddy){
@@ -78,5 +67,21 @@ public class ViewModel extends AndroidViewModel {
 
     public void deleteMsgWithBuddyId(String buddyId){
         new Thread(() -> dataBase.msgDao().deleteMsgWithBuddyId(buddyId, userId)).start();
+    }
+
+    public LiveData<List<Request>> getRequestData(){
+        return dataBase.requestDao().getRequestList(userId);
+    }
+
+    public LiveData<Integer> getUntreatedRequestNum(){
+        return dataBase.requestDao().getRequestUntreatedNum(userId);
+    }
+
+    public void insertRequest(Request request){
+        new Thread(() -> dataBase.requestDao().insertRequest(request)).start();
+    }
+
+    public void updateRequest(Request request){
+        new Thread(() -> dataBase.requestDao().updateRequest(request)).start();
     }
 }

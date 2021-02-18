@@ -21,11 +21,29 @@
         android:paddingStart="25dp"
         android:paddingEnd="20dp">
 
-        <ImageView
-            android:id="@+id/iv_mine_avatar"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:background="@drawable/img_avatar_bg" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.mob.gochat.view.ui.widget.NiceImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                app:corner_radius="@dimen/dp_10"
+                app:border_color="@color/transparent"
+                android:id="@+id/iv_mine_avatar"/>
+
+            <ImageView
+                android:id="@+id/iv_mine_avatar_edit"
+                android:padding="@dimen/dp_20"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/ic_edit_black_24dp"
+                android:background="#88BDBDBD"
+                android:visibility="gone"/>
+
+        </FrameLayout>
+
+
 
         <LinearLayout
             android:layout_width="0dp"
@@ -39,15 +57,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="28sp"
-                android:text="Mob"/>
+                android:padding="@dimen/dp_4" />
 
             <TextView
                 android:layout_marginTop="3dp"
                 android:layout_marginStart="20dp"
                 android:id="@+id/tv_mine_number"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GoChat号：10001"/>
+                android:layout_height="wrap_content"/>
         </LinearLayout>
 
         <ImageView

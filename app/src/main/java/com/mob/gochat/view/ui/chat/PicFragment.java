@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,7 +52,8 @@ public class PicFragment extends BottomSheetDialogFragment {
     private List<Pic> data;
     private final PicHandle picHandle = new PicHandle(this);
     private BottomSheetBehavior behavior;
-    private Buddy buddy;
+    private Callable callable;
+    private String btnText;
 
     @NonNull
     @Override
@@ -78,7 +80,7 @@ public class PicFragment extends BottomSheetDialogFragment {
         picAdapter = new PicAdapter(R.layout.pic_list_item,data);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),4);
         binding.picRv.setLayoutManager(gridLayoutManager);
-
+        binding.picBtnSend.setText(btnText);
         picAdapter.setOnItemClickListener((adapter, v, position) -> {
             if(data.get(position).isChoose()){
                 data.get(position).setChoose(false);
@@ -97,12 +99,7 @@ public class PicFragment extends BottomSheetDialogFragment {
 
         binding.picRv.setAdapter(picAdapter);
         binding.picBtnSend.setOnClickListener(v -> {
-            String uuid = UUID.randomUUID().toString();
-            Date date = new Date(System.currentTimeMillis());
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-            Msg msg = new Msg(uuid, buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID), new Random().nextInt(2), Msg.PIC, data.get(choose).getPicPath(), format.format(date));
-            viewModel.insertMsg(msg);
+            callable.call(data.get(choose).getPicPath());
             dismiss();
         });
         binding.picClose.setOnClickListener(v -> {
@@ -127,9 +124,10 @@ public class PicFragment extends BottomSheetDialogFragment {
         super.onDestroyView();
     }
 
-    public void show(@NonNull FragmentManager manager, @Nullable String tag, Buddy buddy){
+    public void show(@NonNull FragmentManager manager, @Nullable String tag, Callable callable, String btnText){
         show(manager, tag);
-        this.buddy = buddy;
+        this.callable = callable;
+        this.btnText = btnText;
     }
 
     private int getPeekHeight() {
@@ -198,5 +196,9 @@ public class PicFragment extends BottomSheetDialogFragment {
                 picFragment.picHandle.sendMessage(message);
             }
         }
+    }
+
+    public interface Callable{
+        void call(String path);
     }
 }

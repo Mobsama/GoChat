@@ -187,6 +187,7 @@ public class ChatActivity extends AppCompatActivity {
             @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             msg = new Msg(uuid, buddy.getId(), userId, new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString(), format.format(date));
+//            msg = new Msg(uuid, buddy.getId(), userId, Msg.OTHER, Msg.TEXT, "已经添加你为好友了哦，可以开始聊天了！", format.format(date));
             viewModel.insertMsg(msg);
             binding.chatEdit.setText("");
         });
@@ -220,7 +221,15 @@ public class ChatActivity extends AppCompatActivity {
         //照片图标点击事件
         binding.chatBtnPic.setOnClickListener(v -> {
             PicFragment picFragment = new PicFragment();
-            picFragment.show(getSupportFragmentManager(),"PIC", buddy);
+            PicFragment.Callable callable = path -> {
+                String uuid = UUID.randomUUID().toString();
+                Date date = new Date(System.currentTimeMillis());
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                Msg msg = new Msg(uuid, buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID), new Random().nextInt(2), Msg.PIC, path, format.format(date));
+                viewModel.insertMsg(msg);
+            };
+            picFragment.show(getSupportFragmentManager(),"PIC", callable, "发送");
         });
 
         //录音按钮点击事件
@@ -258,12 +267,9 @@ public class ChatActivity extends AppCompatActivity {
         initMsgs();
         chatAdapter = new ChatAdapter(msgs);
         binding.chatRvMsg.setAdapter(chatAdapter);
-        binding.chatRvMsg.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mHelper.resetState();
-                return false;
-            }
+        binding.chatRvMsg.setOnTouchListener((v, event) -> {
+            mHelper.resetState();
+            return false;
         });
     }
 
