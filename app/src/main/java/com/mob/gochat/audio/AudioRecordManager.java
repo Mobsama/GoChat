@@ -330,12 +330,11 @@ public class AudioRecordManager implements Handler.Callback {
                 default:
                     break;
                 case 5:
-                    AudioRecordManager.this.mHandler.postDelayed(new Runnable() {
-                        public void run() {
-                            AudioRecordManager.this.stopRec();
-                            AudioRecordManager.this.finishRecord();
-                            AudioRecordManager.this.destroyView();
-                        }
+                    AudioRecordManager.this.mHandler.postDelayed(() -> {
+                        AudioRecordManager.this.stopRec();
+                        AudioRecordManager.this.finishRecord();
+                        AudioRecordManager.this.destroyView();
+                        AudioRecordManager.this.deleteAudioFile();
                     }, 500L);
                     AudioRecordManager.this.mCurAudioState = AudioRecordManager.this.idleState;
                     AudioRecordManager.this.idleState.enter();
@@ -486,6 +485,7 @@ public class AudioRecordManager implements Handler.Callback {
                         }
 
                         AudioRecordManager.this.destroyView();
+                        AudioRecordManager.this.deleteAudioFile();
                         AudioRecordManager.this.mCurAudioState = AudioRecordManager.this.idleState;
                     }
                     break;

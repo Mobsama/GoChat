@@ -44,16 +44,7 @@ public class BuddyFragment extends Fragment {
     private LinearLayoutManager buddyManager;
     private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
     private final Buddy newBuddy = new Buddy("0","0","新的朋友",null,null, null, null, 0);
-
-    List<String> list = Arrays.asList("胡泉源",
-            "李相赫", "唐志明", "朱泽楷", "郑锐轩", "陈继恩", "李旭辉", "詹智聪", "坠毁", "李科",
-            "吴彦祖", "王健成", "张伪娘", "林丰涛", "序伟", "张伪娘", "郑泽芬", "魏法峰", "%guozehong",
-            "我就是大名鼎鼎的鸟人辉了", "欧阳说ok", "一斤", "冼毅贤", "欧阳说ok", "刘启炬", "英语六级小天才胡茄声",
-            "钧仔", "花都嗨", "张伪娘", "男神", "张伪娘", "张伪娘", "张飞", "jcj", "刘大壮", "李素函",
-            "比利王", "龟王李科", "郑泽芬", "吴彦祖", "陈铎友", "?????", "黄家欣", "陈彦儒", "李白",
-            "赖杰颖", "阿桂", "邓沛锦", "斯内克", "李升辉", "鸭王钟", "关羽", "欧阳宇豪", "高中大馒头",
-            "邓银生", "林小七", "uzi", "张飞", "韶关学院地头蛇", "duckingwu", "卢本伟", "高渐离婚",
-            "韶院过江龙欧阳宇豪", "爱新觉罗福泉", "%guozehong", "郭仔凡");
+    private Buddy user;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -65,7 +56,9 @@ public class BuddyFragment extends Fragment {
         viewModel.getMBuddyData().observe(getActivity(), buddies -> {
             this.buddies.clear();
             this.buddies.addAll(buddies);
-            ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("联系人（"+(this.buddies.size()+"）"));
+            try {
+                ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("联系人（"+(this.buddies.size()+"）"));
+            }catch (Exception ignored){ }
             Collections.sort(this.buddies, (o1, o2) -> {
                 if(o1.getLetters().equals("#") && !o2.getLetters().equals("#")){
                     return 1;
@@ -82,6 +75,9 @@ public class BuddyFragment extends Fragment {
             });
             this.buddies.add(0, newBuddy);
             buddyAdapter.notifyDataSetChanged();
+        });
+        viewModel.getBuddy(userId).observe(getActivity(), buddy -> {
+            this.user = buddy;
         });
         viewModel.getUntreatedRequestNum().observe(getActivity(), num -> {
             if(num != 0){
@@ -154,6 +150,7 @@ public class BuddyFragment extends Fragment {
                 }else{
                     Intent intent = new Intent(getActivity(), InfoActivity.class);
                     intent.putExtra("buddy", buddies.get(adapterPosition));
+                    intent.putExtra("user", user);
                     startActivity(intent);
                 }
             }

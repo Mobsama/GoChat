@@ -27,6 +27,7 @@ import com.mob.gochat.view.adapter.PicAdapter;
 import com.mob.gochat.viewmodel.ViewModel;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -97,7 +98,11 @@ public class PicFragment extends BottomSheetDialogFragment {
 
         binding.picRv.setAdapter(picAdapter);
         binding.picBtnSend.setOnClickListener(v -> {
-            callable.call(data.get(choose).getPicPath());
+            try {
+                callable.call(data.get(choose).getPicPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             dismiss();
         });
         binding.picClose.setOnClickListener(v -> {
@@ -197,6 +202,6 @@ public class PicFragment extends BottomSheetDialogFragment {
     }
 
     public interface Callable{
-        void call(String path);
+        void call(String path) throws IOException;
     }
 }

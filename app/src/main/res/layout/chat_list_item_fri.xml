@@ -10,10 +10,11 @@
     tools:ignore="SmallSp">
 
     <com.mob.gochat.view.ui.widget.NiceImageView
+        android:scaleType="fitXY"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="@dimen/dp_10"
-        android:id="@+id/chat_iv_item_fri"
+        android:id="@+id/chat_iv_avatar_fri"
         android:layout_width="@dimen/dp_40"
         android:layout_height="@dimen/dp_40"
         app:corner_radius="@dimen/dp_10"/>
@@ -23,14 +24,14 @@
         android:layout_height="wrap_content"
         android:id="@+id/chat_tv_item_fri_time"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_avatar_fri"
         android:layout_marginStart="@dimen/dp_4"
         android:textColor="@color/grey_400"
         android:textSize="9sp"/>
 
     <TextView
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_avatar_fri"
         android:layout_marginTop="@dimen/dp_20"
         android:layout_marginStart="@dimen/dp_4"
         android:gravity="center_vertical"
@@ -44,7 +45,7 @@
 
     <ImageView
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_avatar_fri"
         android:layout_marginTop="@dimen/dp_20"
         android:layout_marginStart="@dimen/dp_4"
         android:layout_width="150dp"
@@ -57,7 +58,7 @@
 
     <ImageView
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/chat_iv_item_fri"
+        app:layout_constraintStart_toEndOf="@id/chat_iv_avatar_fri"
         android:layout_marginTop="@dimen/dp_20"
         android:layout_marginStart="@dimen/dp_4"
         android:paddingStart="@dimen/dp_20"

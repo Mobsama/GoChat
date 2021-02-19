@@ -1,19 +1,28 @@
 package com.mob.gochat.view.ui.info;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.interfaces.XPopupImageLoader;
+import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityInfoBinding;
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.viewmodel.ViewModel;
 
@@ -22,23 +31,24 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.File;
+
 public class InfoActivity extends AppCompatActivity implements View.OnClickListener {
     private ActivityInfoBinding binding;
-    private Buddy buddy;
-    private RoomDataBase dataBase;
+    private Buddy buddy, user;
     private ViewModel viewModel;
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         buddy = getIntent().getParcelableExtra("buddy");
-        if(buddy == null){
+        user = getIntent().getParcelableExtra("user");
+        if(buddy == null || user == null){
             finish();
             return;
         }
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
-        dataBase = RoomDataBase.getInstance(this);
         binding = ActivityInfoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         ActionBar actionBar = getSupportActionBar();
@@ -59,6 +69,17 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
             binding.tvInfoNickname.setText("昵称：" + buddy.getName());
         }
 
+        if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
+            binding.ivInfoAvatar.setImageDrawable(getDrawable(R.drawable.buddy));
+        }else{
+            File file = new File(buddy.getAvatar());
+            if(file.exists()){
+                binding.ivInfoAvatar.setImageBitmap(BitmapFactory.decodeFile(buddy.getAvatar()));
+            }else{
+                binding.ivInfoAvatar.setImageDrawable(getDrawable(R.drawable.buddy));
+            }
+        }
+
         binding.tvInfoNumber.setText("GoChat号：" + buddy.getId());
         if(buddy.getGender() == 0){
             binding.tvInfoGender.setText("保密");
@@ -72,6 +93,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
 
         binding.btnInfoChat.setOnClickListener(this);
         binding.btnInfoDelete.setOnClickListener(this);
+        binding.ivInfoAvatar.setOnClickListener(this);
     }
 
     @Override
@@ -89,6 +111,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
         if(v == binding.btnInfoChat){
             Intent intent = new Intent(this, ChatActivity.class);
             intent.putExtra("buddy",buddy);
+            intent.putExtra("user", user);
             startActivity(intent);
             finish();
         }else if(v == binding.btnInfoDelete){
@@ -103,6 +126,17 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                         viewModel.deleteBuddy(buddy);
                         finish();
                     })
+                    .show();
+        }else if(v == binding.ivInfoAvatar){
+            if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
+                return;
+            }
+            if(!(new File(buddy.getAvatar())).exists()){
+                return;
+            }
+            new XPopup.Builder(this)
+                    .asImageViewer((ImageView) v, buddy.getAvatar(), new ImageLoader())
+                    .isShowSaveButton(false)
                     .show();
         }
     }

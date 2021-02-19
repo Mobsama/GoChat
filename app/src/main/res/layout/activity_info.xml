@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.ui.chat.ChatActivity">
+    tools:context=".view.ui.info.InfoActivity">
 
     <LinearLayout
         android:id="@+id/ll_info_user"
@@ -16,12 +16,12 @@
         android:background="@color/white"
         android:paddingTop="40dp">
 
-        <ImageView
+        <com.mob.gochat.view.ui.widget.NiceImageView
             android:id="@+id/iv_info_avatar"
             android:layout_marginStart="25dp"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:background="@drawable/img_avatar_bg" />
+            app:corner_radius="@dimen/dp_10" />
 
         <LinearLayout
             android:layout_width="0dp"

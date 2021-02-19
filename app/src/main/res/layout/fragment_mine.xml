@@ -26,6 +26,7 @@
             android:layout_height="wrap_content">
 
             <com.mob.gochat.view.ui.widget.NiceImageView
+                android:scaleType="fitXY"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 app:corner_radius="@dimen/dp_10"
@@ -38,7 +39,7 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:src="@drawable/ic_edit_black_24dp"
-                android:background="#88BDBDBD"
+                android:background="#66BDBDBD"
                 android:visibility="gone"/>
 
         </FrameLayout>
@@ -235,5 +236,18 @@
             android:src="@drawable/ic_next_black_24dp"
             android:visibility="gone"/>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_mine_logout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="@dimen/dp_40"
+        android:layout_marginStart="@dimen/dp_20"
+        android:layout_marginEnd="@dimen/dp_20"
+        android:text="退出登录"
+        android:background="@drawable/login_btn_bg"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

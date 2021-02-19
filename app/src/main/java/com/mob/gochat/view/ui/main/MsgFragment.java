@@ -21,6 +21,7 @@ import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.BuddyWithMsgWrapper;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
+import com.mob.gochat.utils.ParcelHelper;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.view.adapter.MsgAdapter;
 import com.mob.gochat.R;
@@ -41,6 +42,9 @@ public class MsgFragment extends Fragment {
     RoomDataBase dataBase;
     FragmentMsgBinding binding;
     MsgAdapter adapter;
+    Buddy user;
+    private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentMsgBinding.inflate(inflater,container,false);
@@ -61,6 +65,10 @@ public class MsgFragment extends Fragment {
             }
             this.adapter.notifyDataSetChanged();
         });
+
+        viewModel.getBuddy(userId).observe(getActivity(), buddy -> {
+            this.user = buddy;
+        });
         return binding.getRoot();
     }
 
@@ -68,7 +76,6 @@ public class MsgFragment extends Fragment {
         binding.srvMsg.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.srvMsg.addItemDecoration(new DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL));
         adapter = new MsgAdapter(R.layout.msg_list_item, buddyWithMsgWrappers);
-
         SwipeMenuCreator mSwipeMenuCreator = (leftMenu, rightMenu, position) -> {
             SwipeMenuItem deleteItem = new SwipeMenuItem(getContext());
             deleteItem.setBackground(R.color.red);
@@ -103,6 +110,7 @@ public class MsgFragment extends Fragment {
             if(!ClickUtil.isFastDoubleClick()){
                 Intent intent = new Intent(getActivity(), ChatActivity.class);
                 intent.putExtra("buddy", buddyWithMsgWrappers.get(adapterPosition).getBuddy());
+                intent.putExtra("user", user);
                 startActivity(intent);
             }
         });

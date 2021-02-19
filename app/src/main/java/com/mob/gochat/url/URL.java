@@ -7,7 +7,7 @@ public class URL {
     public static final String forgot = serverURL + "/reset";
     public static final String token = serverURL + "/token";
 
-    public static final String getCode(String mail){
+    public static String getCode(String mail){
         return serverURL + "/getCode?mail=" + mail;
     }
 }

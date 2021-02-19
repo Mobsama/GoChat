@@ -16,6 +16,17 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/chat_panel_voice_btn"/>
 
+    <View
+        android:id="@+id/chat_panel_voice_anim"
+        android:layout_width="@dimen/dp_80"
+        android:layout_height="@dimen/dp_80"
+        android:background="@drawable/chat_voice_anim_bg"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chat_panel_voice_tv_time"
+        app:layout_constraintBottom_toTopOf="@+id/chat_panel_voice_tv_tip"
+        android:visibility="gone"/>
+
     <ImageButton
         android:id="@+id/chat_panel_voice_btn"
         android:layout_width="@dimen/dp_80"
@@ -27,10 +38,10 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/chat_panel_voice_tv_time"
-        app:layout_constraintBottom_toTopOf="@+id/chat_panel_voice_tv_prompt"/>
+        app:layout_constraintBottom_toTopOf="@+id/chat_panel_voice_tv_tip"/>
 
     <TextView
-        android:id="@+id/chat_panel_voice_tv_prompt"
+        android:id="@+id/chat_panel_voice_tv_tip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"

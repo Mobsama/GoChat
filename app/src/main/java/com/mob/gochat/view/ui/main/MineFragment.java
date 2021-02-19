@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -21,14 +22,18 @@ import com.mob.gochat.R;
 import com.mob.gochat.databinding.FragmentMineBinding;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.FileUtil;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ParcelHelper;
+import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.PicFragment;
 import com.mob.gochat.viewmodel.ViewModel;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 public class MineFragment extends Fragment implements View.OnClickListener {
 
@@ -59,6 +64,8 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         binding.tvMineName.setOnClickListener(this);
         binding.ivMineAvatarEdit.setOnClickListener(this);
         binding.btnMineCancel.setOnClickListener(this);
+        binding.ivMineAvatar.setOnClickListener(this);
+        binding.btnMineLogout.setOnClickListener(this);
         setClickable(false);
     }
 
@@ -145,8 +152,18 @@ public class MineFragment extends Fragment implements View.OnClickListener {
 
             PicFragment picFragment = new PicFragment();
             PicFragment.Callable callable = path -> {
+                String uuid = UUID.randomUUID().toString();
                 binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(path));
-                tempBuddy.setAvatar(path);
+                String dir_path = getActivity().getFilesDir().getAbsolutePath() + "/pic/";
+                File file = new File(dir_path);
+                if(!file.exists()){
+                    file.mkdirs();
+                }
+                String suffix = path.substring(path.lastIndexOf("."));
+                file = new File(dir_path + uuid + suffix );
+                file.createNewFile();
+                FileUtil.copyFile(path, file.getPath());
+                tempBuddy.setAvatar(file.getPath());
             };
             picFragment.show(getParentFragmentManager(), "PIC", callable, "确认");
 
@@ -177,6 +194,21 @@ public class MineFragment extends Fragment implements View.OnClickListener {
             binding.btnMineSave.setVisibility(View.GONE);
             binding.btnMineCancel.setVisibility(View.GONE);
             initBuddy();
+
+        }else if(v == binding.ivMineAvatar){
+
+            new XPopup.Builder(getActivity())
+                    .asImageViewer((ImageView) v, buddy.getAvatar(), new ImageLoader())
+                    .isShowSaveButton(false)
+                    .show();
+
+        }else if(v == binding.btnMineLogout){
+
+            new XPopup.Builder(getContext()).asConfirm(buddy.getName(), "是否要退出登录？",
+                    () -> {
+                        
+                    })
+                    .show();
 
         }
     }

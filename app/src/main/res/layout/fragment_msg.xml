@@ -8,6 +8,7 @@
     tools:context=".view.ui.main.MsgFragment">
 
     <com.yanzhenjie.recyclerview.SwipeRecyclerView
+        android:overScrollMode="never"
         android:id="@+id/srv_msg"
         app:layout_constraintTop_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"

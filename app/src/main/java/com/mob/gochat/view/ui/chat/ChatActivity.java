@@ -9,15 +9,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -29,24 +28,25 @@ import android.widget.TextView;
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
 import com.effective.android.panel.PanelSwitchHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lxj.xpopup.XPopup;
-import com.lxj.xpopup.interfaces.XPopupImageLoader;
+import com.mob.gochat.audio.AudioPlayManager;
 import com.mob.gochat.audio.AudioRecordManager;
+import com.mob.gochat.audio.IAudioRecordListener;
 import com.mob.gochat.databinding.ActivityChatBinding;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.R;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.EmotionUtil;
+import com.mob.gochat.utils.FileUtil;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.SpanStringUtils;
+import com.mob.gochat.utils.VibrateUtil;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
+import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.EmotionDecoration;
 import com.mob.gochat.viewmodel.ViewModel;
@@ -73,7 +73,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView mRVEmotion;
     private FloatingActionButton mFABDelete;
     private ImageButton mBtnVoice;
-    private Buddy buddy;
+    private Buddy buddy, user;
     private ViewModel viewModel;
     private List<Msg> msgs;
     private ChatAdapter chatAdapter;
@@ -81,16 +81,19 @@ public class ChatActivity extends AppCompatActivity {
     private EmotionAdapter emotionAdapter;
     private final ChatHandle chatHandle = new ChatHandle(this);
     private ScheduledExecutorService scheduledExecutor;
-    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+
+    private String curUUID;
 
     long mStartVoiceTime;
-    TextView mVoiceTime;
+    TextView mVoiceTime, mVoiceTip;
+    View voiceAnim;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         buddy = getIntent().getParcelableExtra("buddy");
-        if(buddy == null){
+        user = getIntent().getParcelableExtra("user");
+        if(buddy == null || user == null){
             finish();
             return;
         }
@@ -140,6 +143,55 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         AudioRecordManager.getInstance(this).setAudioSavePath("");
+        AudioRecordManager.getInstance(this).setAudioRecordListener(new IAudioRecordListener() {
+            @Override
+            public void initTipView() {
+                voiceAnim.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void setTimeoutTipView(int counter) {
+
+            }
+
+            @Override
+            public void setRecordingTipView() {
+
+            }
+
+            @Override
+            public void setAudioShortTipView() {
+                mVoiceTip.setText("录音时间太短啦");
+            }
+
+            @Override
+            public void setCancelTipView() {
+
+            }
+
+            @Override
+            public void destroyTipView() {
+
+            }
+
+            @Override
+            public void onStartRecord() {
+                mVoiceTip.setText("松开按钮发送录音,滑动取消录音");
+            }
+
+            @Override
+            public void onFinish(Uri audioPath, int duration) {
+                voiceAnim.setVisibility(View.GONE);
+                sendMsg(new Random().nextInt(2), Msg.VOICE, getFilesDir().getAbsolutePath() + "/audio/" + curUUID + ".voice");
+            }
+
+            @Override
+            public void onAudioDBChanged(int db) {
+                float p = db * 0.1f;
+                voiceAnim.setScaleX(p);
+                voiceAnim.setScaleY(p);
+            }
+        });
     }
 
     @Override
@@ -157,6 +209,7 @@ public class ChatActivity extends AppCompatActivity {
             if (mHelper != null) {
                 mHelper.hookSystemBackByPanelSwitcher();
             }
+            AudioPlayManager.getInstance().stopPlay();
             finish();
         }
         return super.onOptionsItemSelected(item);
@@ -175,6 +228,8 @@ public class ChatActivity extends AppCompatActivity {
         mFABDelete = findViewById(R.id.chat_fab_emotion);
         mBtnVoice = findViewById(R.id.chat_panel_voice_btn);
         mVoiceTime = findViewById(R.id.chat_panel_voice_tv_time);
+        mVoiceTip = findViewById(R.id.chat_panel_voice_tv_tip);
+        voiceAnim = findViewById(R.id.chat_panel_voice_anim);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -184,22 +239,19 @@ public class ChatActivity extends AppCompatActivity {
 
         //发送按钮点击事件
         binding.chatBtnSend.setOnClickListener(v -> {
-            String uuid = UUID.randomUUID().toString();
-            Msg msg;
-            Date date = new Date(System.currentTimeMillis());
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-            msg = new Msg(uuid, buddy.getId(), userId, new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString(), format.format(date));
+            curUUID = UUID.randomUUID().toString();
+            sendMsg(new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString());
 //            msg = new Msg(uuid, buddy.getId(), userId, Msg.OTHER, Msg.TEXT, "已经添加你为好友了哦，可以开始聊天了！", format.format(date));
-            viewModel.insertMsg(msg);
             binding.chatEdit.setText("");
         });
 
-        //聊天头像点击事件
-        chatAdapter.addChildClickViewIds(R.id.chat_iv_item_fri, R.id.chat_iv_item_mine, R.id.chat_pic_item_fri, R.id.chat_pic_item_mine);
+        //聊天消息点击事件
+        chatAdapter.addChildClickViewIds(R.id.chat_iv_avatar_fri, R.id.chat_pic_item_fri, R.id.chat_pic_item_mine, R.id.chat_voice_item_mine, R.id.chat_voice_item_fri);
         chatAdapter.setOnItemChildClickListener((adapter, view, position) -> {
-            if (view.getId() == R.id.chat_iv_item_fri){
+            if (view.getId() == R.id.chat_iv_avatar_fri){
                 Intent intent = new Intent(ChatActivity.this, InfoActivity.class);
+                intent.putExtra("buddy", buddy);
+                intent.putExtra("user", user);
                 startActivity(intent);
             }
             else if(view.getId() == R.id.chat_pic_item_fri || view.getId() == R.id.chat_pic_item_mine){
@@ -208,6 +260,10 @@ public class ChatActivity extends AppCompatActivity {
                         .asImageViewer((ImageView) view, msg.getMsg(), new ImageLoader())
                         .isShowSaveButton(false)
                         .show();
+            }
+            else if(view.getId() == R.id.chat_voice_item_mine || view.getId() == R.id.chat_voice_item_fri){
+                Msg msg = (Msg)adapter.getItem(position);
+                AudioPlayManager.getInstance().startPlay(this, Uri.parse(msg.getMsg()), null);
             }
         });
 
@@ -225,34 +281,23 @@ public class ChatActivity extends AppCompatActivity {
         binding.chatBtnPic.setOnClickListener(v -> {
             PicFragment picFragment = new PicFragment();
             PicFragment.Callable callable = path -> {
-                String uuid = UUID.randomUUID().toString();
-                Date date = new Date(System.currentTimeMillis());
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-                Msg msg = new Msg(uuid, buddy.getId(), MMKVUitl.getString(DataKeyConst.USER_ID), new Random().nextInt(2), Msg.PIC, path, format.format(date));
-                viewModel.insertMsg(msg);
+                curUUID = UUID.randomUUID().toString();
+                String dir_path = getFilesDir().getAbsolutePath() + "/pic/";
+                File file = new File(dir_path);
+                if(!file.exists()){
+                    file.mkdirs();
+                }
+                String suffix = path.substring(path.lastIndexOf("."));
+                file = new File(dir_path + curUUID + suffix );
+                file.createNewFile();
+                FileUtil.copyFile(path, file.getPath());
+                sendMsg(new Random().nextInt(2), Msg.PIC, file.getPath());
             };
             picFragment.show(getSupportFragmentManager(),"PIC", callable, "发送");
         });
 
         //录音按钮点击事件
         mBtnVoice.setOnTouchListener(new VoiceBtnOnTouchListener());
-    }
-
-    static class ImageLoader implements XPopupImageLoader{
-
-        @Override
-        public void loadImage(int position, @NonNull Object uri, @NonNull ImageView imageView) {
-            Glide.with(imageView)
-                    .load(uri)
-                    .apply(new RequestOptions().override(Target.SIZE_ORIGINAL))
-                    .into(imageView);
-        }
-
-        @Override
-        public File getImageFile(@NonNull Context context, @NonNull Object uri) {
-            return null;
-        }
     }
 
     private void initEmotionRecycleView(){
@@ -268,7 +313,7 @@ public class ChatActivity extends AppCompatActivity {
         chatManager.setStackFromEnd(true);
         binding.chatRvMsg.setLayoutManager(chatManager);
         initMsgs();
-        chatAdapter = new ChatAdapter(msgs);
+        chatAdapter = new ChatAdapter(msgs, buddy, user);
         binding.chatRvMsg.setAdapter(chatAdapter);
         binding.chatRvMsg.setOnTouchListener((v, event) -> {
             mHelper.resetState();
@@ -287,6 +332,7 @@ public class ChatActivity extends AppCompatActivity {
             chatActivityWeakReference = new WeakReference<>(chatActivity);
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
@@ -294,10 +340,15 @@ public class ChatActivity extends AppCompatActivity {
             if(chatActivity != null){
                 if(msg.what==1){
                     long time = System.currentTimeMillis() - chatActivity.mStartVoiceTime;
-                    String min = time / 60000 >= 10 ? time / 60000 + "" : "0" + time / 60000;
-                    String sec = time / 1000 % 60 >= 10 ? time / 1000 % 60 + "" : "0" + time / 1000 % 60;
-                    String ms = time / 10 % 100 >= 10 ? time / 10 % 100 + "" : "0" + time / 10 % 100;
-                    chatActivity.mVoiceTime.setText(min+":"+sec+":"+ms);
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("mm:ss:SS");
+                    chatActivity.mVoiceTime.setText(format.format(new Date(time)));
+                    if(time > 60 * 1000){
+                        chatActivity.stopVoice(stop);
+                        chatActivity.mVoiceTip.setText("录音最长60s");
+                    }
+                    if(chatActivity.status == cancel || chatActivity.status == stop){
+                        chatActivity.mVoiceTime.setText("00:00:00");
+                    }
                 }else if(msg.what == 2){
                     chatActivity.binding.chatEdit.dispatchKeyEvent(
                             new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
@@ -306,20 +357,34 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    void startVoiceTime(){
+    void startVoice(){
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutor.scheduleWithFixedDelay(() -> {
             Message msg = new Message();
             msg.what = 1;
             chatHandle.sendMessage(msg);
         },0,10, TimeUnit.MILLISECONDS);
+        VibrateUtil.playVibrate(this, false);
+        AudioRecordManager.getInstance(ChatActivity.this).startRecord(curUUID);
     }
 
-    void stopVoiceTime(){
+    @SuppressLint("SetTextI18n")
+    void stopVoice(int status){
         if(scheduledExecutor != null){
             scheduledExecutor.shutdownNow();
             scheduledExecutor = null;
         }
+        if(status == stop){
+            mVoiceTip.setText("按住按钮进行录音");
+            this.status = stop;
+            AudioRecordManager.getInstance(ChatActivity.this).stopRecord();
+        }else if(status == cancel){
+            mVoiceTip.setText("已取消录音");
+            this.status = cancel;
+            AudioRecordManager.getInstance(ChatActivity.this).destroyRecord();
+        }
+        VibrateUtil.playVibrate(this, false);
+        mVoiceTime.setText("00:00:00");
     }
 
     void startEmotionDel(){
@@ -338,55 +403,39 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    final static int start = 0, stop = 1, cancel = 2;
+    int status = stop;
     @SuppressLint("ClickableViewAccessibility")
     class VoiceBtnOnTouchListener implements View.OnTouchListener{
         float x=0 , y=0;
-        final static int start = 0, stop = 1, cancel = 2;
-        int status = stop;
         boolean isCancel = false;
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction() == MotionEvent.ACTION_DOWN){
-                v.setScaleX(0.98f);
-                v.setScaleY(0.98f);
+                touchAnim(v, 0.98f);
                 mStartVoiceTime = System.currentTimeMillis();
                 isCancel = false;
                 x = event.getX();
                 y = event.getY();
-                startVoiceTime();
-                String uuid = UUID.randomUUID().toString();
-                AudioRecordManager.getInstance(ChatActivity.this).startRecord(uuid);
+                curUUID = UUID.randomUUID().toString();
                 status = start;
-            }else if(event.getAction() == MotionEvent.ACTION_UP){
-                v.setScaleX(1f);
-                v.setScaleY(1f);
-                stopVoiceTime();
-                mVoiceTime.setText("00:00:00");
+                startVoice();
+            }else if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
+                touchAnim(v, 1f);
                 if(status == start){
-                    AudioRecordManager.getInstance(ChatActivity.this).stopRecord();
-                    status = stop;
-                }
-//                Msg msg = new Msg("",new Random().nextInt(2), Msg.VOICE);
-//                chatViewModel.addMsg(msg);
-            }else if(event.getAction() == MotionEvent.ACTION_CANCEL){
-                v.setScaleX(1f);
-                v.setScaleY(1f);
-                stopVoiceTime();
-                mVoiceTime.setText("00:00:00");
-                if(status == start){
-                    AudioRecordManager.getInstance(ChatActivity.this).stopRecord();
-                    status = stop;
+                    stopVoice(stop);
                 }
             }else if(event.getAction() == MotionEvent.ACTION_MOVE){
+                if(Math.sqrt(Math.pow(event.getX() - x,2)+Math.pow(event.getY() - y,2)) > 100 && !isCancel){
+                    mVoiceTip.setText("继续滑动取消录音");
+                } else if(Math.sqrt(Math.pow(event.getX() - x,2)+Math.pow(event.getY() - y,2)) < 50 && !isCancel){
+                    mVoiceTip.setText("松开按钮发送录音,滑动取消录音");
+                }
                 if(Math.sqrt(Math.pow(event.getX() - x,2)+Math.pow(event.getY() - y,2)) > 200 && !isCancel){
                     isCancel = true;
-                    v.setScaleX(1f);
-                    v.setScaleY(1f);
-                    stopVoiceTime();
-                    mVoiceTime.setText("00:00:00");
+                    touchAnim(v, 1f);
                     if(status == start){
-                        AudioRecordManager.getInstance(ChatActivity.this).destroyRecord();
-                        status = cancel;
+                        stopVoice(cancel);
                     }
                 }
             }
@@ -394,20 +443,37 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void sendMsg(int type, int msgType, String message){
+        Date date = new Date(System.currentTimeMillis());
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        Msg msg = new Msg(curUUID, buddy.getId(), user.getId(), type, msgType, message, format.format(date));
+        viewModel.insertMsg(msg);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     class EmotionDelBtnOnTouchListener implements View.OnTouchListener{
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction() == MotionEvent.ACTION_DOWN){
-                v.setScaleX(0.98f);
-                v.setScaleY(0.98f);
+                touchAnim(v, 0.98f);
                 startEmotionDel();
             }else if(event.getAction() == MotionEvent.ACTION_UP){
-                v.setScaleX(1f);
-                v.setScaleY(1f);
+                touchAnim(v, 1f);
                 stopEmotionDel();
             }
             return true;
         }
+    }
+
+    private void touchAnim(View v, float proportion){
+        v.setScaleX(proportion);
+        v.setScaleY(proportion);
+    }
+
+    @Override
+    protected void onDestroy() {
+        AudioPlayManager.getInstance().stopPlay();
+        super.onDestroy();
     }
 }

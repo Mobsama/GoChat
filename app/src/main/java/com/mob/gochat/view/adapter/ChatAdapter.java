@@ -1,5 +1,6 @@
 package com.mob.gochat.view.adapter;
 
+import android.graphics.BitmapFactory;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -8,18 +9,22 @@ import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.mob.gochat.R;
+import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.utils.SpanStringUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.List;
 
 public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.ChatViewHolder> {
-
-    public ChatAdapter(List data){
+    private Buddy buddy, user;
+    public ChatAdapter(List<Msg> data, Buddy buddy, Buddy user){
         super(data);
+        this.buddy = buddy;
+        this.user = user;
         addItemType(Msg.FRI, R.layout.chat_list_item_fri);
         addItemType(Msg.MINE, R.layout.chat_list_item_mine);
         addItemType(Msg.OTHER, R.layout.chat_list_item_other);
@@ -29,6 +34,16 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
     protected void convert(@NotNull ChatViewHolder baseViewHolder, Msg msg) {
         switch (baseViewHolder.getItemViewType()){
             case Msg.FRI:
+                if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
+                    baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_fri, getContext().getDrawable(R.drawable.buddy));
+                }else{
+                    File file = new File(buddy.getAvatar());
+                    if(file.exists()){
+                        baseViewHolder.setImageBitmap(R.id.chat_iv_avatar_fri, BitmapFactory.decodeFile(buddy.getAvatar()));
+                    }else{
+                        baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_fri, getContext().getDrawable(R.drawable.buddy));
+                    }
+                }
                 baseViewHolder.setText(R.id.chat_tv_item_fri_time, msg.getTime());
                 switch (msg.getMsgType()){
                     case Msg.TEXT:
@@ -55,6 +70,16 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                 }
                 break;
             case Msg.MINE:
+                if(user.getAvatar() == null || user.getAvatar().equals("")){
+                    baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_mine, getContext().getDrawable(R.drawable.buddy));
+                }else{
+                    File file = new File(user.getAvatar());
+                    if(file.exists()){
+                        baseViewHolder.setImageBitmap(R.id.chat_iv_avatar_mine, BitmapFactory.decodeFile(user.getAvatar()));
+                    }else{
+                        baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_mine, getContext().getDrawable(R.drawable.buddy));
+                    }
+                }
                 baseViewHolder.setText(R.id.chat_tv_item_mine_time, msg.getTime());
                 switch (msg.getMsgType()){
                     case Msg.TEXT:
