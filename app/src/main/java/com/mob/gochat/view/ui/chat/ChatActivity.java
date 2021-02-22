@@ -78,7 +78,6 @@ public class ChatActivity extends AppCompatActivity {
     private PanelSwitchHelper mHelper;
     protected ActivityChatBinding binding;
 
-
     private RecyclerView mRVEmotion;
     private FloatingActionButton mFABDelete;
     private ImageButton mBtnVoice;
