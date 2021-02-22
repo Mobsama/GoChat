@@ -12,8 +12,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.mob.gochat.R;
 import com.mob.gochat.url.URL;
 import com.mob.gochat.utils.EmailUtil;
@@ -67,20 +65,20 @@ public class RegisterActivity extends AppCompatActivity {
                     }else if(!mETPass.getText().toString().equals(mETCPass.getText().toString())){
                         Toast.makeText(RegisterActivity.this,"两次密码输入不同",Toast.LENGTH_LONG).show();
                     } else{
-                        new Thread(() -> {
-                            HashMap<String,String> paramsMap = new HashMap<>();
-                            paramsMap.put("mail",mETMail.getText().toString());
-                            paramsMap.put("password", Sha256Util.getSHA256(mETPass.getText().toString()));
-                            paramsMap.put("code",mETCode.getText().toString());
-                            paramsMap.put("name",mETName.getText().toString());
-                            String result = HttpClientUtil.HttpPost(URL.register,null
-                                    ,paramsMap);
-                            JSONObject resultJson = (JSONObject) JSON.parse(result);
-                            ThreadToast(resultJson.getString("msg"));
-                            if(resultJson.getInteger("code")==1){
-                                finish();
-                            }
-                        }).start();
+//                        new Thread(() -> {
+//                            HashMap<String,String> paramsMap = new HashMap<>();
+//                            paramsMap.put("mail",mETMail.getText().toString());
+//                            paramsMap.put("password", Sha256Util.getSHA256(mETPass.getText().toString()));
+//                            paramsMap.put("code",mETCode.getText().toString());
+//                            paramsMap.put("name",mETName.getText().toString());
+//                            String result = HttpClientUtil.HttpPost(URL.register,null
+//                                    ,paramsMap);
+//                            JSONObject resultJson = (JSONObject) JSON.parse(result);
+//                            ThreadToast(resultJson.getString("msg"));
+//                            if(resultJson.getInteger("code")==1){
+//                                finish();
+//                            }
+//                        }).start();
                     }
                     break;
                 case R.id.tv_login:
@@ -92,15 +90,15 @@ public class RegisterActivity extends AppCompatActivity {
                     if(!ttv.isRunning()){
                         if(EmailUtil.isEmailValid(mETMail.getText().toString())){
                             ttv.start();
-                            new Thread(() -> {
-                                String result = HttpClientUtil.HttpGet(URL.getCode(mETMail.getText().toString()));
-                                JSONObject resultJson = (JSONObject) JSON.parse(result);
-                                if(resultJson.getInteger("code") == -1
-                                        || resultJson.getInteger("code") == 0){
-                                    ThreadToast(resultJson.getString("msg"));
-                                    ttv.stop();
-                                }
-                            }).start();
+//                            new Thread(() -> {
+//                                String result = HttpClientUtil.HttpGet(URL.getCode(mETMail.getText().toString()));
+//                                JSONObject resultJson = (JSONObject) JSON.parse(result);
+//                                if(resultJson.getInteger("code") == -1
+//                                        || resultJson.getInteger("code") == 0){
+//                                    ThreadToast(resultJson.getString("msg"));
+//                                    ttv.stop();
+//                                }
+//                            }).start();
                         }else{
                             Toast.makeText(RegisterActivity.this,"请输入正确的邮箱地址",Toast.LENGTH_LONG).show();
                         }

@@ -13,8 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.mob.gochat.R;
 import com.mob.gochat.url.URL;
 import com.mob.gochat.utils.HttpClientUtil;
@@ -67,22 +65,22 @@ public class LoginActivity extends AppCompatActivity {
                             paramsMap.put("number",mETUser.getText().toString());
                             paramsMap.put("password", Sha256Util.getSHA256(mETPassword.getText().toString()));
                             String result = HttpClientUtil.HttpPost(URL.login,null, paramsMap);
-                            JSONObject resultJson = (JSONObject) JSON.parse(result);
-                            switch (resultJson.getInteger("code")){
-                                case 0:
-                                case -1:
-                                    ThreadToast(resultJson.getString("msg"));
-                                    break;
-                                case 1:
-                                    mSharedPreferences = getSharedPreferences("data",MODE_PRIVATE);
-                                    mEditor = mSharedPreferences.edit();
-                                    mEditor.putString("token",resultJson.getString("msg"));
-                                    mEditor.apply();
-                                    finish();
-                                    break;
-                                default:
-                                    break;
-                            }
+//                            JSONObject resultJson = (JSONObject) JSON.parse(result);
+//                            switch (resultJson.getInteger("code")){
+//                                case 0:
+//                                case -1:
+//                                    ThreadToast(resultJson.getString("msg"));
+//                                    break;
+//                                case 1:
+//                                    mSharedPreferences = getSharedPreferences("data",MODE_PRIVATE);
+//                                    mEditor = mSharedPreferences.edit();
+//                                    mEditor.putString("token",resultJson.getString("msg"));
+//                                    mEditor.apply();
+//                                    finish();
+//                                    break;
+//                                default:
+//                                    break;
+//                            }
                         }).start();
                     }
                     break;

@@ -77,11 +77,7 @@ public class MainApp extends Application {
     }
 
     private void startService(){
-        if(Build.VERSION.SDK_INT >= 26){
-            startForegroundService(new Intent(getBaseContext(), SocketIOClientService.class));
-        }else {
-            startService(new Intent(getBaseContext(), SocketIOClientService.class));
-        }
+        startService(new Intent(getBaseContext(), SocketIOClientService.class));
     }
 
     private void bindService(){

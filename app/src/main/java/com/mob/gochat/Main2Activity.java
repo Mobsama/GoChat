@@ -10,8 +10,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mob.gochat.view.ui.login.LoginActivity;
 import com.mob.gochat.utils.HttpClientUtil;
@@ -63,18 +61,18 @@ public class Main2Activity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-        new Thread(() -> {
-            HashMap<String,String> paramsMap = new HashMap<>();
-            String result = HttpClientUtil.HttpPost("http://10.0.2.2:8182/token",token,paramsMap);
-            JSONObject resultJson = (JSONObject) JSON.parse(result);
-            if(resultJson.getInteger("code") == 0){
-                Intent intent = new Intent(this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }else{
-                number = resultJson.getString("msg");
-            }
-        }).start();
+//        new Thread(() -> {
+//            HashMap<String,String> paramsMap = new HashMap<>();
+//            String result = HttpClientUtil.HttpPost("http://10.0.2.2:8182/token",token,paramsMap);
+//            JSONObject resultJson = (JSONObject) JSON.parse(result);
+//            if(resultJson.getInteger("code") == 0){
+//                Intent intent = new Intent(this, LoginActivity.class);
+//                startActivity(intent);
+//                finish();
+//            }else{
+//                number = resultJson.getString("msg");
+//            }
+//        }).start();
     }
 
     private void initView(){

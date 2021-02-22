@@ -30,7 +30,10 @@ import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
 import com.effective.android.panel.PanelSwitchHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.lxj.xpopup.XPopup;
+import com.mob.gochat.MainApp;
 import com.mob.gochat.audio.AudioPlayManager;
 import com.mob.gochat.audio.AudioRecordManager;
 import com.mob.gochat.audio.IAudioRecordListener;
@@ -38,11 +41,10 @@ import com.mob.gochat.databinding.ActivityChatBinding;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.R;
-import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.EmotionUtil;
 import com.mob.gochat.utils.FileUtil;
-import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.SpanStringUtils;
+import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.utils.VibrateUtil;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
@@ -52,18 +54,24 @@ import com.mob.gochat.view.ui.widget.EmotionDecoration;
 import com.mob.gochat.viewmodel.ViewModel;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import io.socket.client.Socket;
+import rxhttp.RxHttp;
+import rxhttp.RxHttpPlugins;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -81,8 +89,10 @@ public class ChatActivity extends AppCompatActivity {
     private EmotionAdapter emotionAdapter;
     private final ChatHandle chatHandle = new ChatHandle(this);
     private ScheduledExecutorService scheduledExecutor;
-
+    private Gson gson;
     private String curUUID;
+
+    private final Socket socket = MainApp.getInstance().getSocket();
 
     long mStartVoiceTime;
     TextView mVoiceTime, mVoiceTip;
@@ -182,7 +192,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onFinish(Uri audioPath, int duration) {
                 voiceAnim.setVisibility(View.GONE);
-                sendMsg(new Random().nextInt(2), Msg.VOICE, getFilesDir().getAbsolutePath() + "/audio/" + curUUID + ".voice");
+                sendMsg(Msg.VOICE, getFilesDir().getAbsolutePath() + "/audio/" + curUUID + ".voice");
             }
 
             @Override
@@ -192,6 +202,10 @@ public class ChatActivity extends AppCompatActivity {
                 voiceAnim.setScaleY(p);
             }
         });
+
+        GsonBuilder builder = new GsonBuilder();
+        builder.excludeFieldsWithoutExposeAnnotation();
+        gson = builder.create();
     }
 
     @Override
@@ -240,7 +254,7 @@ public class ChatActivity extends AppCompatActivity {
         //发送按钮点击事件
         binding.chatBtnSend.setOnClickListener(v -> {
             curUUID = UUID.randomUUID().toString();
-            sendMsg(new Random().nextInt(2), Msg.TEXT, binding.chatEdit.getText().toString());
+            sendMsg(Msg.TEXT, binding.chatEdit.getText().toString());
 //            msg = new Msg(uuid, buddy.getId(), userId, Msg.OTHER, Msg.TEXT, "已经添加你为好友了哦，可以开始聊天了！", format.format(date));
             binding.chatEdit.setText("");
         });
@@ -291,7 +305,7 @@ public class ChatActivity extends AppCompatActivity {
                 file = new File(dir_path + curUUID + suffix );
                 file.createNewFile();
                 FileUtil.copyFile(path, file.getPath());
-                sendMsg(new Random().nextInt(2), Msg.PIC, file.getPath());
+                sendMsg(Msg.PIC, file.getPath());
             };
             picFragment.show(getSupportFragmentManager(),"PIC", callable, "发送");
         });
@@ -443,12 +457,36 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void sendMsg(int type, int msgType, String message){
+    private void sendMsg(int msgType, String message){
         Date date = new Date(System.currentTimeMillis());
         @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        Msg msg = new Msg(curUUID, buddy.getId(), user.getId(), type, msgType, message, format.format(date));
-        viewModel.insertMsg(msg);
+        Msg msg = new Msg(curUUID, buddy.getId(), user.getId(), Msg.MINE, msgType, message, format.format(date));
+        String[] msgJson = new String[]{gson.toJson(msg)};
+        if(MainApp.getInstance().isNet()){
+            if(msgType == Msg.PIC){
+                RxHttp.postForm("/service/file-upload")
+                        .addFile("file", new File(msg.getMsg()))
+                        .asString()
+                        .subscribe(s -> {
+
+                        }, throwable -> {
+
+                        });
+            }
+            socket.emit("message", msgJson, (args) -> {
+                JSONObject object = (JSONObject) args[0];
+                try {
+                    if(object.getString("status").equals("ok")){
+                        viewModel.insertMsg(msg);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            });
+        }else {
+            ToastUtil.showMsg(this, "无法连接服务器");
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -466,7 +504,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void touchAnim(View v, float proportion){
+    void touchAnim(View v, float proportion){
         v.setScaleX(proportion);
         v.setScaleY(proportion);
     }

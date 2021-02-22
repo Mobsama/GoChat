@@ -35,7 +35,6 @@ public class DebugActivity extends AppCompatActivity {
                     }
                 });
             }
-
         });
     }
 }
