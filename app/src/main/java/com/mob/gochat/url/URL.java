@@ -9,7 +9,7 @@ public class URL {
     public static final String forgot = serverURL + "/reset";
     public static final String token = serverURL + "/token";
     @DefaultDomain
-    public static final String baseURL = "http://mobsan.top";
+    public static final String baseURL = "http://mobsan.top:3000";
 
     public static String getCode(String mail){
         return serverURL + "/getCode?mail=" + mail;

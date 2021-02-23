@@ -13,7 +13,7 @@ import android.widget.Toast;
 import com.mob.gochat.R;
 import com.mob.gochat.url.URL;
 import com.mob.gochat.utils.EmailUtil;
-import com.mob.gochat.utils.HttpClientUtil;
+import com.mob.gochat.http.Http;
 import com.mob.gochat.utils.Sha256Util;
 import com.mob.gochat.view.ui.widget.TimingTextView;
 
@@ -60,7 +60,7 @@ public class ForgotPassActivity extends AppCompatActivity {
                             paramsMap.put("mail",mETMail.getText().toString());
                             paramsMap.put("password", Sha256Util.getSHA256(mETPass.getText().toString()));
                             paramsMap.put("code",mETCode.getText().toString());
-                            String result = HttpClientUtil.HttpPost(URL.forgot,null
+                            String result = Http.HttpPost(URL.forgot,null
                                     ,paramsMap);
 //                            JSONObject resultJson = (JSONObject) JSON.parse(result);
 //                            ThreadToast(resultJson.getString("msg"));
@@ -76,7 +76,7 @@ public class ForgotPassActivity extends AppCompatActivity {
                         if(EmailUtil.isEmailValid(mETMail.getText().toString())){
                             ttv.start();
                             new Thread(() -> {
-                                String result = HttpClientUtil.HttpGet(URL.getCode(mETMail.getText().toString()));
+                                String result = Http.HttpGet(URL.getCode(mETMail.getText().toString()));
 //                                JSONObject resultJson = (JSONObject) JSON.parse(result);
 //                                if(resultJson.getInteger("code") == -1
 //                                        || resultJson.getInteger("code") == 0){

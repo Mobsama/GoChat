@@ -54,7 +54,7 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                         break;
                     case Msg.PIC:
                         Glide.with(getContext())
-                                .load(msg.getMsg())
+                                .load(getContext().getFilesDir().getAbsolutePath() + "/pic/" +msg.getMsg())
                                 .centerCrop()
                                 .placeholder(R.mipmap.ic_placeholder)
                                 .into((ImageView) baseViewHolder.getView(R.id.chat_pic_item_fri));
@@ -90,7 +90,7 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                         break;
                     case Msg.PIC:
                         Glide.with(getContext())
-                                .load(msg.getMsg())
+                                .load(getContext().getFilesDir().getAbsolutePath() + "/pic/" + msg.getMsg())
                                 .centerCrop()
                                 .placeholder(R.mipmap.ic_placeholder)
                                 .into((ImageView) baseViewHolder.getView(R.id.chat_pic_item_mine));

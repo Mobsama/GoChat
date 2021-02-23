@@ -18,30 +18,19 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.FragmentPicBinding;
-import com.mob.gochat.model.Buddy;
-import com.mob.gochat.model.Msg;
 import com.mob.gochat.model.Pic;
-import com.mob.gochat.utils.DataKeyConst;
-import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.adapter.PicAdapter;
-import com.mob.gochat.viewmodel.ViewModel;
+import com.mob.gochat.view.base.Callable;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 public class PicFragment extends BottomSheetDialogFragment {
@@ -199,9 +188,5 @@ public class PicFragment extends BottomSheetDialogFragment {
                 picFragment.picHandle.sendMessage(message);
             }
         }
-    }
-
-    public interface Callable{
-        void call(String path) throws IOException;
     }
 }

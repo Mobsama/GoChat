@@ -25,6 +25,7 @@ import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.FileUtil;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ParcelHelper;
+import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.PicFragment;
 import com.mob.gochat.viewmodel.ViewModel;
@@ -151,7 +152,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         }else if(v == binding.ivMineAvatarEdit){
 
             PicFragment picFragment = new PicFragment();
-            PicFragment.Callable callable = path -> {
+            Callable callable = path -> {
                 String uuid = UUID.randomUUID().toString();
                 binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(path));
                 String dir_path = getActivity().getFilesDir().getAbsolutePath() + "/pic/";

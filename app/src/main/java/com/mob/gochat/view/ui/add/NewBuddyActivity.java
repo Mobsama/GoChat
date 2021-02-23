@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -21,8 +22,12 @@ import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.adapter.NewBuddyAdapter;
 import com.mob.gochat.viewmodel.ViewModel;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.UUID;
 
 public class NewBuddyActivity extends AppCompatActivity {
     private ActivityNewBuddyBinding binding;
@@ -50,7 +55,12 @@ public class NewBuddyActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         });
         binding.newBuddyBtn.setOnClickListener(v -> {
-
+            String uuid = UUID.randomUUID().toString();
+            Date date = new Date(System.currentTimeMillis());
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            Request request = new Request(uuid, userId, "10010", "Test", null, format.format(date));
+            viewModel.insertRequest(request);
         });
     }
 

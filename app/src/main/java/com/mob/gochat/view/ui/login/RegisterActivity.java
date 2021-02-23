@@ -13,13 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mob.gochat.R;
-import com.mob.gochat.url.URL;
 import com.mob.gochat.utils.EmailUtil;
-import com.mob.gochat.utils.HttpClientUtil;
-import com.mob.gochat.utils.Sha256Util;
 import com.mob.gochat.view.ui.widget.TimingTextView;
-
-import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
 

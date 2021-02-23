@@ -110,8 +110,8 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         if(v == binding.btnInfoChat){
             Intent intent = new Intent(this, ChatActivity.class);
-            intent.putExtra("buddy",buddy);
-            intent.putExtra("user", user);
+            intent.putExtra("buddy",buddy.getId());
+            intent.putExtra("user", user.getId());
             startActivity(intent);
             finish();
         }else if(v == binding.btnInfoDelete){

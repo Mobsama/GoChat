@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.mob.gochat.R;
 import com.mob.gochat.url.URL;
-import com.mob.gochat.utils.HttpClientUtil;
+import com.mob.gochat.http.Http;
 import com.mob.gochat.utils.Sha256Util;
 
 import java.util.HashMap;
@@ -64,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
                             HashMap<String,String> paramsMap = new HashMap<>();
                             paramsMap.put("number",mETUser.getText().toString());
                             paramsMap.put("password", Sha256Util.getSHA256(mETPassword.getText().toString()));
-                            String result = HttpClientUtil.HttpPost(URL.login,null, paramsMap);
+                            String result = Http.HttpPost(URL.login,null, paramsMap);
 //                            JSONObject resultJson = (JSONObject) JSON.parse(result);
 //                            switch (resultJson.getInteger("code")){
 //                                case 0:

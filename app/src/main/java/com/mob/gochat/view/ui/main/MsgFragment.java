@@ -109,8 +109,8 @@ public class MsgFragment extends Fragment {
         binding.srvMsg.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
                 Intent intent = new Intent(getActivity(), ChatActivity.class);
-                intent.putExtra("buddy", buddyWithMsgWrappers.get(adapterPosition).getBuddy());
-                intent.putExtra("user", user);
+                intent.putExtra("buddy", buddyWithMsgWrappers.get(adapterPosition).getBuddy().getId());
+                intent.putExtra("user", user.getId());
                 startActivity(intent);
             }
         });

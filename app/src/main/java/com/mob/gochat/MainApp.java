@@ -12,7 +12,10 @@ import android.os.PowerManager;
 import android.provider.Settings;
 
 import androidx.annotation.RequiresApi;
+import androidx.lifecycle.LifecycleOwner;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.websocket.SocketIOClientService;
 
@@ -24,10 +27,14 @@ public class MainApp extends Application {
     @Getter
     private static MainApp instance;
     @Getter
+    private LifecycleOwner lifecycleOwner;
+    @Getter
     Socket socket;
     @Getter
     @Setter
     boolean isNet = true;
+    @Getter
+    private Gson gson;
     SocketIOClientService.SocketIOClientBinder binder;
     SocketIOClientService socketIOClientService;
 
@@ -47,12 +54,20 @@ public class MainApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        lifecycleOwner = this.getLifecycleOwner();
         MMKVUitl.initialize(this);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isIgnoringBatteryOptimizations()){
             requestIgnoreBatteryOptimizations();
         }
+        initGson();
         startService();
         bindService();
+    }
+
+    private void initGson(){
+        GsonBuilder builder = new GsonBuilder();
+        builder.excludeFieldsWithoutExposeAnnotation();
+        gson = builder.create();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)

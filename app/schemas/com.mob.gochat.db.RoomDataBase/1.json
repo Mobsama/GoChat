@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "10dc49ce9a2bb046bf34900a0e9662ba",
+    "identityHash": "3b5d8163676865cf2c4f57ffbcb7b775",
     "entities": [
       {
         "tableName": "msg",
@@ -187,7 +187,7 @@
       },
       {
         "tableName": "request",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `user_id` TEXT, `buddy_id` TEXT, `buddy_name` TEXT, `buddy_avatar` TEXT, `time` TEXT, `is_treated` INTEGER NOT NULL, PRIMARY KEY(`uuid`), FOREIGN KEY(`user_id`) REFERENCES `buddy`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `user_id` TEXT, `buddy_id` TEXT, `buddy_name` TEXT, `buddy_avatar` TEXT, `time` TEXT, `is_treated` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`uuid`), FOREIGN KEY(`user_id`) REFERENCES `buddy`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "uuid",
@@ -229,7 +229,8 @@
             "fieldPath": "isTreated",
             "columnName": "is_treated",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -271,7 +272,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '10dc49ce9a2bb046bf34900a0e9662ba')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3b5d8163676865cf2c4f57ffbcb7b775')"
     ]
   }
 }

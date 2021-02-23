@@ -48,6 +48,7 @@ import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.utils.VibrateUtil;
 import com.mob.gochat.view.adapter.ChatAdapter;
 import com.mob.gochat.view.adapter.EmotionAdapter;
+import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.EmotionDecoration;
@@ -81,9 +82,10 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView mRVEmotion;
     private FloatingActionButton mFABDelete;
     private ImageButton mBtnVoice;
+    private String buddyId, userId;
     private Buddy buddy, user;
     private ViewModel viewModel;
-    private List<Msg> msgs;
+    private List<Msg> msgs = new ArrayList<>();
     private ChatAdapter chatAdapter;
     private LinearLayoutManager chatManager;
     private EmotionAdapter emotionAdapter;
@@ -101,27 +103,46 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        buddy = getIntent().getParcelableExtra("buddy");
-        user = getIntent().getParcelableExtra("user");
-        if(buddy == null || user == null){
+        binding = ActivityChatBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        findViewById();
+        buddyId = getIntent().getStringExtra("buddy");
+        userId = getIntent().getStringExtra("user");
+        if(buddyId == null || userId == null){
             finish();
             return;
         }
-        binding = ActivityChatBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
-            actionBar.setTitle(buddy.getName());
-        }else{
-            actionBar.setTitle(buddy.getRemarks());
-        }
-        findViewById();
+
+        viewModel = new ViewModelProvider(this).get(ViewModel.class);
+        initStatue();
+        initAudio();
+        initEmotionRecycleView();
+        viewModel.getBuddy(buddyId).observe(this, b -> {
+            buddy = b;
+            viewModel.getBuddy(userId).observe(this, u -> {
+                user = u;
+                initTitle();
+                initChatRecycleView();
+                initOnClickListener();
+                viewModel.getChatMsgData(buddyId).observe(this, msgs -> {
+                    this.msgs.clear();
+                    this.msgs.addAll(msgs);
+                    viewModel.updateMsgStatue(buddy.getId());
+                    chatAdapter.notifyDataSetChanged();
+                    chatManager.scrollToPosition(this.msgs.size()-1);
+                });
+            });
+        });
         SmartSwipe.wrap(this)
                 .addConsumer(new ActivitySlidingBackConsumer(this))
                 .enableDirection(SwipeConsumer.DIRECTION_LEFT)
                 .setEdgeSize(100);
+        GsonBuilder builder = new GsonBuilder();
+        builder.excludeFieldsWithoutExposeAnnotation();
+        gson = builder.create();
+    }
 
+    private void initStatue(){
         TextWatcher mTextWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -136,22 +157,11 @@ public class ChatActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         };
-
-        viewModel = new ViewModelProvider(this).get(ViewModel.class);
         binding.chatBtnSend.setEnabled(false);
-
         binding.chatEdit.addTextChangedListener(mTextWatcher);
-        initEmotionRecycleView();
-        initChatRecycleView();
-        initOnClickListener();
-        viewModel.getChatMsgData(buddy.getId()).observe(this,msgs -> {
-            this.msgs.clear();
-            this.msgs.addAll(msgs);
-            viewModel.updateMsgStatue(buddy.getId());
-            chatAdapter.notifyDataSetChanged();
-            chatManager.scrollToPosition(this.msgs.size()-1);
-        });
+    }
 
+    private void initAudio(){
         AudioRecordManager.getInstance(this).setAudioSavePath("");
         AudioRecordManager.getInstance(this).setAudioRecordListener(new IAudioRecordListener() {
             @Override
@@ -160,14 +170,10 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void setTimeoutTipView(int counter) {
-
-            }
+            public void setTimeoutTipView(int counter) { }
 
             @Override
-            public void setRecordingTipView() {
-
-            }
+            public void setRecordingTipView() { }
 
             @Override
             public void setAudioShortTipView() {
@@ -175,14 +181,10 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void setCancelTipView() {
-
-            }
+            public void setCancelTipView() { }
 
             @Override
-            public void destroyTipView() {
-
-            }
+            public void destroyTipView() { }
 
             @Override
             public void onStartRecord() {
@@ -192,7 +194,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onFinish(Uri audioPath, int duration) {
                 voiceAnim.setVisibility(View.GONE);
-                sendMsg(Msg.VOICE, getFilesDir().getAbsolutePath() + "/audio/" + curUUID + ".voice");
+                sendMsg(Msg.VOICE, curUUID + ".voice");
             }
 
             @Override
@@ -202,10 +204,20 @@ public class ChatActivity extends AppCompatActivity {
                 voiceAnim.setScaleY(p);
             }
         });
+    }
 
-        GsonBuilder builder = new GsonBuilder();
-        builder.excludeFieldsWithoutExposeAnnotation();
-        gson = builder.create();
+    private void initTitle(){
+        if(buddy == null || user == null){
+            finish();
+            return;
+        }
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
+            actionBar.setTitle(buddy.getName());
+        }else{
+            actionBar.setTitle(buddy.getRemarks());
+        }
     }
 
     @Override
@@ -254,9 +266,14 @@ public class ChatActivity extends AppCompatActivity {
         //发送按钮点击事件
         binding.chatBtnSend.setOnClickListener(v -> {
             curUUID = UUID.randomUUID().toString();
-            sendMsg(Msg.TEXT, binding.chatEdit.getText().toString());
+            if(MainApp.getInstance().isNet()){
+                sendMsg(Msg.TEXT, binding.chatEdit.getText().toString());
 //            msg = new Msg(uuid, buddy.getId(), userId, Msg.OTHER, Msg.TEXT, "已经添加你为好友了哦，可以开始聊天了！", format.format(date));
-            binding.chatEdit.setText("");
+                binding.chatEdit.setText("");
+            }else{
+                ToastUtil.showMsg(this,"无法连接服务器");
+            }
+
         });
 
         //聊天消息点击事件
@@ -271,7 +288,7 @@ public class ChatActivity extends AppCompatActivity {
             else if(view.getId() == R.id.chat_pic_item_fri || view.getId() == R.id.chat_pic_item_mine){
                 Msg msg = (Msg)adapter.getItem(position);
                 new XPopup.Builder(this)
-                        .asImageViewer((ImageView) view, msg.getMsg(), new ImageLoader())
+                        .asImageViewer((ImageView) view, getFilesDir().getAbsolutePath() + "/pic/" + msg.getMsg(), new ImageLoader())
                         .isShowSaveButton(false)
                         .show();
             }
@@ -294,7 +311,7 @@ public class ChatActivity extends AppCompatActivity {
         //照片图标点击事件
         binding.chatBtnPic.setOnClickListener(v -> {
             PicFragment picFragment = new PicFragment();
-            PicFragment.Callable callable = path -> {
+            Callable callable = path -> {
                 curUUID = UUID.randomUUID().toString();
                 String dir_path = getFilesDir().getAbsolutePath() + "/pic/";
                 File file = new File(dir_path);
@@ -305,7 +322,7 @@ public class ChatActivity extends AppCompatActivity {
                 file = new File(dir_path + curUUID + suffix );
                 file.createNewFile();
                 FileUtil.copyFile(path, file.getPath());
-                sendMsg(Msg.PIC, file.getPath());
+                sendMsg(Msg.PIC, file.getName());
             };
             picFragment.show(getSupportFragmentManager(),"PIC", callable, "发送");
         });
@@ -326,18 +343,12 @@ public class ChatActivity extends AppCompatActivity {
         chatManager = new LinearLayoutManager(this);
         chatManager.setStackFromEnd(true);
         binding.chatRvMsg.setLayoutManager(chatManager);
-        initMsgs();
         chatAdapter = new ChatAdapter(msgs, buddy, user);
         binding.chatRvMsg.setAdapter(chatAdapter);
         binding.chatRvMsg.setOnTouchListener((v, event) -> {
             mHelper.resetState();
             return false;
         });
-    }
-
-    private void initMsgs(){
-        msgs = new ArrayList<>();
-        viewModel.updateMsgStatue(buddy.getId());
     }
 
     static class ChatHandle extends Handler {
@@ -462,31 +473,7 @@ public class ChatActivity extends AppCompatActivity {
         @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         Msg msg = new Msg(curUUID, buddy.getId(), user.getId(), Msg.MINE, msgType, message, format.format(date));
-        String[] msgJson = new String[]{gson.toJson(msg)};
-        if(MainApp.getInstance().isNet()){
-            if(msgType == Msg.PIC){
-                RxHttp.postForm("/service/file-upload")
-                        .addFile("file", new File(msg.getMsg()))
-                        .asString()
-                        .subscribe(s -> {
-
-                        }, throwable -> {
-
-                        });
-            }
-            socket.emit("message", msgJson, (args) -> {
-                JSONObject object = (JSONObject) args[0];
-                try {
-                    if(object.getString("status").equals("ok")){
-                        viewModel.insertMsg(msg);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            });
-        }else {
-            ToastUtil.showMsg(this, "无法连接服务器");
-        }
+        viewModel.sendMsg(this, msg);
     }
 
     @SuppressLint("ClickableViewAccessibility")

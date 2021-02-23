@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.mob.gochat.MainApp;
 import com.mob.gochat.databinding.ActivityDebugBinding;
+import com.mob.gochat.http.Http;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,18 +24,7 @@ public class DebugActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.btn.setOnClickListener((view) -> {
-            Log.d("click","---------------");
-            String[] msg = {"123"};
-            if(MainApp.getInstance().isNet()){
-                MainApp.getInstance().getSocket().emit("hello", msg, (args) -> {
-                    JSONObject object = (JSONObject) args[0];
-                    try {
-                        Log.d("chat",object.getString("status"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
+
         });
     }
 }

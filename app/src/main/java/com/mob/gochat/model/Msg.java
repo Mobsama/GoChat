@@ -73,6 +73,7 @@ public class Msg implements MultiItemEntity {
     private int msgType;
 
     @Getter
+    @Setter
     @Expose()
     @ColumnInfo(name = "msg", typeAffinity = ColumnInfo.TEXT)
     private String msg;
