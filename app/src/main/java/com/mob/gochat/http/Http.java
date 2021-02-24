@@ -1,5 +1,6 @@
 package com.mob.gochat.http;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -7,6 +8,8 @@ import androidx.annotation.NonNull;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.model.Msg;
 import com.mob.gochat.model.PostRequest;
+import com.mob.gochat.url.URL;
+import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.base.Callable;
 import com.rxjava.rxlife.RxLife;
 
@@ -118,4 +121,78 @@ public class Http {
 
                 });
     }
+
+    public static void getLogin(Context context, String number, String pass, Callable callable){
+        RxHttp.get(URL.login)
+                .add("number", number)
+                .add("password", pass)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    if(request.getStatus() == 200){
+                        callable.call(s);
+                    }else if(request.getStatus() == 300){
+                        ToastUtil.showMsg(context, "密码错误");
+                    }else if(request.getStatus() == 400){
+                        ToastUtil.showMsg(context, "账号错误");
+                    }
+                }, throwable -> {
+                    ToastUtil.showMsg(context, "连接服务器失败");
+                });
+    }
+
+    public static void getRegister(Context context, String mail, String password, String code, String name, Callable callable){
+        RxHttp.get(URL.register)
+                .add("mail", mail)
+                .add("password", password)
+                .add("code", code)
+                .add("name", name)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    if(request.getStatus() == 200){
+                        callable.call(s);
+                    }else if(request.getStatus() == 300){
+                        ToastUtil.showMsg(context, "邮箱已被注册");
+                    }
+                }, throwable -> {
+                    ToastUtil.showMsg(context, "连接服务器失败");
+                });
+    }
+
+    public static void getForgot(Context context, String mail, String password, String code, Callable callable){
+        RxHttp.get(URL.forgot)
+                .add("mail", mail)
+                .add("password", password)
+                .add("code", code)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    if(request.getStatus() == 200){
+                        callable.call(s);
+                    }else if(request.getStatus() == 300){
+                        ToastUtil.showMsg(context, "重置密码失败");
+                    }
+                }, throwable -> {
+                    ToastUtil.showMsg(context, "连接服务器失败");
+                });
+    }
+
+    public static void getCode(Context context, String mail, Callable callable){
+        RxHttp.get(URL.code)
+                .add("mail", mail)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    if(request.getStatus() == 200){
+                        callable.call(s);
+                    }else if(request.getStatus() == 300){
+                        ToastUtil.showMsg(context, "发送验证码失败");
+                    }
+                }, throwable -> {
+                    ToastUtil.showMsg(context, "连接服务器失败");
+                });
+    }
+
+
 }

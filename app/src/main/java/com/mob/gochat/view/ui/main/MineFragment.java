@@ -1,7 +1,5 @@
 package com.mob.gochat.view.ui.main;
 
-import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,7 +22,7 @@ import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.FileUtil;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.utils.ParcelHelper;
+import com.mob.gochat.utils.ParcelUtil;
 import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.PicFragment;
@@ -50,7 +48,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         initOnClick();
         viewModel.getBuddy(userId).observe(getActivity(), buddy -> {
             this.buddy = buddy;
-            this.tempBuddy = ParcelHelper.copy(this.buddy);
+            this.tempBuddy = ParcelUtil.copy(this.buddy);
             initBuddy();
         });
         return binding.getRoot();
@@ -178,7 +176,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
 
         }else if(v == binding.btnMineSave){
 
-            buddy = ParcelHelper.copy(this.tempBuddy);
+            buddy = ParcelUtil.copy(this.tempBuddy);
             viewModel.updateBuddy(buddy);
             setClickable(false);
             binding.tvMineName.setBackground(null);
@@ -188,7 +186,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
 
         }else if(v == binding.btnMineCancel){
 
-            tempBuddy = ParcelHelper.copy(this.buddy);
+            tempBuddy = ParcelUtil.copy(this.buddy);
             setClickable(false);
             binding.tvMineName.setBackground(null);
             binding.ivMineEdit.setVisibility(View.VISIBLE);

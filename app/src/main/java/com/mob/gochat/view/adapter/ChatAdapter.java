@@ -11,7 +11,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.mob.gochat.R;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
-import com.mob.gochat.utils.SpanStringUtils;
+import com.mob.gochat.utils.SpanStringUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -121,7 +121,7 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
         @Override
         public BaseViewHolder setText(int viewId, @Nullable CharSequence value) {
             TextView textView = getView(viewId);
-            textView.setText(SpanStringUtils.getEmotionContent(getContext(),textView,value.toString()));
+            textView.setText(SpanStringUtil.getEmotionContent(getContext(),textView,value.toString()));
             return this;
         }
     }

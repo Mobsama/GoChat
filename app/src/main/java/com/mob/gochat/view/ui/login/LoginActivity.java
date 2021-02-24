@@ -60,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                             || TextUtils.isEmpty(mETPassword.getText())){
                         Toast.makeText(LoginActivity.this,"请输入全部信息",Toast.LENGTH_LONG).show();
                     }else{
+                        
                         new Thread(() -> {
                             HashMap<String,String> paramsMap = new HashMap<>();
                             paramsMap.put("number",mETUser.getText().toString());

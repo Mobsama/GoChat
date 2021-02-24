@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.github.promeg.pinyinhelper.Pinyin;
 import com.lxj.xpopup.XPopup;
 import com.mob.gochat.databinding.FragmentMsgBinding;
 import com.mob.gochat.db.RoomDataBase;
@@ -21,7 +20,6 @@ import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.BuddyWithMsgWrapper;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.utils.ParcelHelper;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.view.adapter.MsgAdapter;
 import com.mob.gochat.R;

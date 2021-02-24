@@ -3,7 +3,7 @@ package com.mob.gochat.utils;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class ParcelHelper {
+public class ParcelUtil {
     public static <T> T copy(Parcelable input) {
         Parcel parcel = null;
 

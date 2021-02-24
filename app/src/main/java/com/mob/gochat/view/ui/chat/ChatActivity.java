@@ -43,7 +43,7 @@ import com.mob.gochat.model.Msg;
 import com.mob.gochat.R;
 import com.mob.gochat.utils.EmotionUtil;
 import com.mob.gochat.utils.FileUtil;
-import com.mob.gochat.utils.SpanStringUtils;
+import com.mob.gochat.utils.SpanStringUtil;
 import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.utils.VibrateUtil;
 import com.mob.gochat.view.adapter.ChatAdapter;
@@ -54,9 +54,6 @@ import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.view.ui.widget.EmotionDecoration;
 import com.mob.gochat.viewmodel.ViewModel;
 
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -69,10 +66,6 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import io.socket.client.Socket;
-import rxhttp.RxHttp;
-import rxhttp.RxHttpPlugins;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -93,9 +86,6 @@ public class ChatActivity extends AppCompatActivity {
     private ScheduledExecutorService scheduledExecutor;
     private Gson gson;
     private String curUUID;
-
-    private final Socket socket = MainApp.getInstance().getSocket();
-
     long mStartVoiceTime;
     TextView mVoiceTime, mVoiceTip;
     View voiceAnim;
@@ -304,7 +294,7 @@ public class ChatActivity extends AppCompatActivity {
             int curPosition = binding.chatEdit.getSelectionStart();
             StringBuilder sb = new StringBuilder(binding.chatEdit.getText().toString());
             sb.insert(curPosition, emotionName);
-            binding.chatEdit.setText(SpanStringUtils.getEmotionContent(ChatActivity.this, binding.chatEdit, sb.toString()));
+            binding.chatEdit.setText(SpanStringUtil.getEmotionContent(ChatActivity.this, binding.chatEdit, sb.toString()));
             binding.chatEdit.setSelection(curPosition + emotionName.length());
         });
 

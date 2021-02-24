@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SpanStringUtils {
+public class SpanStringUtil {
     private static String regexEmotion = "\\[([\u4e00-\u9fa5\\w])+\\]";
     public static SpannableString getEmotionContent(final Context context, final TextView tv, String source) {
         SpannableString spannableString = new SpannableString(source);
