@@ -2,10 +2,8 @@ package com.mob.gochat.viewmodel;
 
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
@@ -18,22 +16,18 @@ import com.mob.gochat.model.Msg;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.utils.ToastUtil;
-import com.mob.gochat.view.base.Callable;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import io.socket.client.Socket;
 
 public class ViewModel extends AndroidViewModel {
     private final RoomDataBase dataBase;
     private final Socket socket = MainApp.getInstance().getSocket();
-
+    private final Executor mExecutor = Executors.newSingleThreadExecutor();
     private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
 
     public ViewModel(@NonNull Application application) {
@@ -42,7 +36,7 @@ public class ViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<List<Msg>> getChatMsgData(String id){
+    public LiveData<List<Msg>> getChatMsgData(@NonNull String id){
         return dataBase.msgDao().getChatMsgList(id, userId);
     }
 
@@ -62,28 +56,28 @@ public class ViewModel extends AndroidViewModel {
     }
 
     public void insertBuddy(@NonNull Buddy buddy){
-        new Thread(() -> dataBase.buddyDao().insertBuddy(buddy)).start();
+        mExecutor.execute(() -> dataBase.buddyDao().insertBuddy(buddy));
     }
 
     public void updateBuddy(@NonNull Buddy buddy){
-        new Thread(() -> dataBase.buddyDao().updateBuddy(buddy)).start();
+        mExecutor.execute(() -> dataBase.buddyDao().updateBuddy(buddy));
     }
 
     public void deleteBuddy(@NonNull Buddy buddy){
-        new Thread(() -> dataBase.buddyDao().deleteBuddy(buddy)).start();
+        mExecutor.execute(() -> dataBase.buddyDao().deleteBuddy(buddy));
     }
 
     public void insertMsg(@NonNull Msg msg){
-        new Thread(() -> dataBase.msgDao().insertMsg(msg)).start();
+        mExecutor.execute(() -> dataBase.msgDao().insertMsg(msg));
 
     }
 
     public void updateMsgStatue(@NonNull String buddyId){
-        new Thread(() -> dataBase.msgDao().updateMsgStatus(buddyId, userId)).start();
+        mExecutor.execute(() -> dataBase.msgDao().updateMsgStatus(buddyId, userId));
     }
 
     public void deleteMsgWithBuddyId(@NonNull String buddyId){
-        new Thread(() -> dataBase.msgDao().deleteMsgWithBuddyId(buddyId, userId)).start();
+        mExecutor.execute(() -> dataBase.msgDao().deleteMsgWithBuddyId(buddyId, userId));
     }
 
     @NonNull
@@ -97,11 +91,11 @@ public class ViewModel extends AndroidViewModel {
     }
 
     public void insertRequest(@NonNull Request request){
-        new Thread(() -> dataBase.requestDao().insertRequest(request)).start();
+        mExecutor.execute(() -> dataBase.requestDao().insertRequest(request));
     }
 
     public void updateRequest(@NonNull Request request){
-        new Thread(() -> dataBase.requestDao().updateRequest(request)).start();
+        mExecutor.execute(() -> dataBase.requestDao().updateRequest(request));
     }
 
     public void sendMsg(@NonNull Context context, @NonNull Msg msg){

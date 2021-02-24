@@ -1,6 +1,7 @@
 package com.mob.gochat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -11,6 +12,7 @@ import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ThreadUtils;
+import com.mob.gochat.view.ui.login.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.VIBRATE};
     List<String> mPermissionList = new ArrayList<>();
     private static final int PERMISSION_REQUEST = 1;
-    private RoomDataBase dataBase;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,34 +45,13 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
-        dataBase = RoomDataBase.getInstance(this);
-                new Thread(() -> {
-            if(MMKVUitl.getString(DataKeyConst.USER_ID) == null){
-                ThreadUtils.executeByCpu(new ThreadUtils.Task() {
-                    @Override
-                    public Object doInBackground() throws Throwable {
-                        Buddy buddy = new Buddy("10000", "10000" , "Mob", null,null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
-                        dataBase.buddyDao().insertBuddy(buddy);
-                        MMKVUitl.save(DataKeyConst.USER_ID,"10000");
-                        return null;
-                    }
-
-                    @Override
-                    public void onSuccess(Object result) {
-
-                    }
-
-                    @Override
-                    public void onCancel() {
-                    }
-
-                    @Override
-                    public void onFail(Throwable t) {
-
-                    }
-                });
-            }
-        }).start();
+        if(MMKVUitl.getString(DataKeyConst.TOKEN) == null){
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }else{
+            MainApp.getInstance().startSocketIO();
+        }
     }
 
     @Override

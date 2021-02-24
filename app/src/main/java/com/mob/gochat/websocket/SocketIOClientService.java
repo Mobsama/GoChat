@@ -28,7 +28,10 @@ import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
+import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 
@@ -81,7 +84,7 @@ public class SocketIOClientService extends Service {
     private void initSocketIOClient(){
         URI uri = URI.create("http://mobsan.top:3000");
         IO.Options options = IO.Options.builder()
-                .setAuth(Collections.singletonMap("token", "12345"))
+                .setAuth(Collections.singletonMap(DataKeyConst.TOKEN, MMKVUitl.getString(DataKeyConst.TOKEN)))
                 .setReconnection(true)
                 .setTimeout(20_000)
                 .build();
@@ -113,6 +116,14 @@ public class SocketIOClientService extends Service {
         socket.on("request", args -> {
             Request request = gson.fromJson(args[0].toString(), Request.class);
             Http.getFile(Msg.PIC, request.getBuddyAvatar(), s -> new Thread(() -> dataBase.requestDao().insertRequest(request)).start());
+        });
+        socket.on("token", args -> {
+            PostRequest postRequest = gson.fromJson(args[0].toString(), PostRequest.class);
+            if(postRequest.getStatus() == 200){
+                MMKVUitl.save(DataKeyConst.USER_ID, postRequest.getMessage());
+            }else{
+                //token过期,强制退出
+            }
         });
     }
 

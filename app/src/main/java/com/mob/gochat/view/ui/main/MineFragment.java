@@ -150,7 +150,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         }else if(v == binding.ivMineAvatarEdit){
 
             PicFragment picFragment = new PicFragment();
-            Callable callable = path -> {
+            Callable<String> callable = path -> {
                 String uuid = UUID.randomUUID().toString();
                 binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(path));
                 String dir_path = getActivity().getFilesDir().getAbsolutePath() + "/pic/";

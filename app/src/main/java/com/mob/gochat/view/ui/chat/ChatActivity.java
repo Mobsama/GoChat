@@ -301,7 +301,7 @@ public class ChatActivity extends AppCompatActivity {
         //照片图标点击事件
         binding.chatBtnPic.setOnClickListener(v -> {
             PicFragment picFragment = new PicFragment();
-            Callable callable = path -> {
+            Callable<String> callable = path -> {
                 curUUID = UUID.randomUUID().toString();
                 String dir_path = getFilesDir().getAbsolutePath() + "/pic/";
                 File file = new File(dir_path);

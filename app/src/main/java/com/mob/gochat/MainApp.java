@@ -60,8 +60,6 @@ public class MainApp extends Application {
             requestIgnoreBatteryOptimizations();
         }
         initGson();
-        startService();
-        bindService();
     }
 
     private void initGson(){
@@ -89,6 +87,11 @@ public class MainApp extends Application {
             isIgnoring = powerManager.isIgnoringBatteryOptimizations(getPackageName());
         }
         return isIgnoring;
+    }
+
+    public void startSocketIO(){
+        startService();
+        bindService();
     }
 
     private void startService(){
