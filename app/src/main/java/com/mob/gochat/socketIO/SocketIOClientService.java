@@ -1,4 +1,4 @@
-package com.mob.gochat.websocket;
+package com.mob.gochat.socketIO;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -10,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,7 +20,6 @@ import androidx.lifecycle.LiveData;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.db.RoomDataBase;
@@ -32,7 +30,6 @@ import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 
 import java.io.IOException;
@@ -41,7 +38,6 @@ import java.util.Collections;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
 import lombok.Getter;
 
 public class SocketIOClientService extends Service {
@@ -109,13 +105,21 @@ public class SocketIOClientService extends Service {
                     break;
                 case Msg.PIC:
                 case Msg.VOICE:
-                    Http.getFile(msg.getMsgType(), msg.getMsg(), s -> new Thread(() -> dataBase.msgDao().insertMsg(msg)).start());
+                    try {
+                        Http.getFile(getBaseContext(), msg.getMsgType(), msg.getMsg(), s -> new Thread(() -> dataBase.msgDao().insertMsg(msg)).start());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         });
         socket.on("request", args -> {
             Request request = gson.fromJson(args[0].toString(), Request.class);
-            Http.getFile(Msg.PIC, request.getBuddyAvatar(), s -> new Thread(() -> dataBase.requestDao().insertRequest(request)).start());
+            try {
+                Http.getFile(getBaseContext(), Msg.PIC, request.getBuddyAvatar(), s -> new Thread(() -> dataBase.requestDao().insertRequest(request)).start());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         });
         socket.on("token", args -> {
             PostRequest postRequest = gson.fromJson(args[0].toString(), PostRequest.class);

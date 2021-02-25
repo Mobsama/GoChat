@@ -17,7 +17,9 @@ import androidx.lifecycle.LifecycleOwner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.websocket.SocketIOClientService;
+import com.mob.gochat.socketIO.SocketIOClientService;
+
+import java.io.File;
 
 import io.socket.client.Socket;
 import lombok.Getter;

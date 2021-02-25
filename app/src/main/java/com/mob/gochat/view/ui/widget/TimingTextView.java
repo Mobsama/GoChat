@@ -52,7 +52,7 @@ public class TimingTextView extends androidx.appcompat.widget.AppCompatTextView 
 
     private void ComputeTime(){
         currTime--;
-        if(currTime == 0){
+        if(currTime <= 0){
             stop();
         }
     }

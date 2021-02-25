@@ -22,6 +22,8 @@ import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityInfoBinding;
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.utils.DataKeyConst;
+import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.viewmodel.ViewModel;
@@ -35,7 +37,8 @@ import java.io.File;
 
 public class InfoActivity extends AppCompatActivity implements View.OnClickListener {
     private ActivityInfoBinding binding;
-    private Buddy buddy, user;
+    private Buddy buddy;
+    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
     private ViewModel viewModel;
 
     @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
@@ -43,8 +46,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         buddy = getIntent().getParcelableExtra("buddy");
-        user = getIntent().getParcelableExtra("user");
-        if(buddy == null || user == null){
+        if(buddy == null){
             finish();
             return;
         }
@@ -58,8 +60,16 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                 .enableDirection(SwipeConsumer.DIRECTION_LEFT)
                 .setEdgeSize(100);
 
-        binding.btnInfoGroup.setVisibility(View.VISIBLE);
-        binding.btnInfoAdd.setVisibility(View.GONE);
+        viewModel.getBuddy(buddy.getId()).observe(this, b -> {
+            if(b == null){
+                binding.btnInfoGroup.setVisibility(View.GONE);
+                binding.btnInfoAdd.setVisibility(View.VISIBLE);
+            }else{
+                binding.btnInfoGroup.setVisibility(View.VISIBLE);
+                binding.btnInfoAdd.setVisibility(View.GONE);
+            }
+        });
+
 
         if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
             binding.tvInfoName.setText(buddy.getName());
@@ -111,7 +121,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
         if(v == binding.btnInfoChat){
             Intent intent = new Intent(this, ChatActivity.class);
             intent.putExtra("buddy",buddy.getId());
-            intent.putExtra("user", user.getId());
+            intent.putExtra("user", userId);
             startActivity(intent);
             finish();
         }else if(v == binding.btnInfoDelete){

@@ -7,19 +7,25 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
+import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityNewBuddyBinding;
+import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
+import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.adapter.NewBuddyAdapter;
+import com.mob.gochat.view.ui.info.InfoActivity;
 import com.mob.gochat.viewmodel.ViewModel;
 
 import java.text.SimpleDateFormat;
@@ -55,12 +61,34 @@ public class NewBuddyActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         });
         binding.newBuddyBtn.setOnClickListener(v -> {
-            String uuid = UUID.randomUUID().toString();
-            Date date = new Date(System.currentTimeMillis());
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-            Request request = new Request(uuid, userId, "10010", "Test", null, format.format(date));
-            viewModel.insertRequest(request);
+//            String uuid = UUID.randomUUID().toString();
+//            Date date = new Date(System.currentTimeMillis());
+//            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+//            Request request = new Request(uuid, userId, "10010", "Test", null, format.format(date));
+//            viewModel.insertRequest(request);
+            try{
+                int id = Integer.parseInt(binding.newBuddySearch.getText().toString());
+                if(id <= 10000){
+                    ToastUtil.showMsg(this, "账号格式错误");
+                }else if((id+"").equals(userId)){
+                    ToastUtil.showMsg(this, "这是你哦");
+                }else{
+                    Http.getUser(this, id+"", userId, str -> {
+                        PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+                        if(request.getStatus() == 200){
+                            Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
+                            Intent intent = new Intent(this, InfoActivity.class);
+                            intent.putExtra("buddy", buddy);
+                            startActivity(intent);
+                        }else{
+                            ToastUtil.showMsg(this, "找不到联系人");
+                        }
+                    });
+                }
+            }catch (Exception e){
+                ToastUtil.showMsg(this, "账号格式错误");
+            }
         });
     }
 

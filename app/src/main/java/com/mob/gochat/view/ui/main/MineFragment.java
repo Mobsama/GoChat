@@ -1,7 +1,9 @@
 package com.mob.gochat.view.ui.main;
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +18,22 @@ import com.lxj.xpopupext.listener.CityPickerListener;
 import com.lxj.xpopupext.listener.TimePickerListener;
 import com.lxj.xpopupext.popup.CityPickerPopup;
 import com.lxj.xpopupext.popup.TimePickerPopup;
+import com.mob.gochat.MainActivity;
+import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.FragmentMineBinding;
+import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.Msg;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.FileUtil;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ParcelUtil;
+import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.PicFragment;
+import com.mob.gochat.view.ui.login.LoginActivity;
 import com.mob.gochat.viewmodel.ViewModel;
 
 import java.io.File;
@@ -34,12 +42,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+import lombok.SneakyThrows;
+
 public class MineFragment extends Fragment implements View.OnClickListener {
 
     FragmentMineBinding binding;
     private ViewModel viewModel;
     private Buddy buddy, tempBuddy;
     private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private boolean isChangeAvatar = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -72,12 +83,12 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         binding.tvMineName.setText(buddy.getName());
         if(buddy.getAvatar() != null){
             try {
-                binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(buddy.getAvatar()));
+                binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(MainApp.getInstance().getBaseContext().getFilesDir().getAbsolutePath() + "/pic/" + buddy.getAvatar()));
             }catch (Exception ignored){
-                binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeStream(this.getResources().openRawResource(R.raw.test)));
+                binding.ivMineAvatar.setImageDrawable(getResources().getDrawable(R.drawable.buddy));
             }
         }else {
-            binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeStream(this.getResources().openRawResource(R.raw.test)));
+            binding.ivMineAvatar.setImageDrawable(getResources().getDrawable(R.drawable.buddy));
         }
 
         binding.tvMineNumber.setText("GoChat号：" + buddy.getId());
@@ -92,123 +103,143 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         binding.tvMineAddress.setText(buddy.getAddress());
     }
 
+    @SneakyThrows
     @Override
     public void onClick(View v) {
-        if(v == binding.llMineGender){
-
-            new XPopup.Builder(getContext())
-                    .asBottomList("请选择性别", new String[]{"保密", "男", "女"},
-                            (position, text) -> {
-                                binding.tvMineGender.setText(text);
-                                tempBuddy.setGender(position);
-                            }).show();
-
-        }else if(v == binding.llMineBirthday){
-
-            Calendar date = Calendar.getInstance();
-            date.set(2000,0,1);
-            TimePickerPopup popup = new TimePickerPopup(getContext())
-                    .setDefaultDate(date)
-                    .setTimePickerListener(new TimePickerListener() {
-                        @Override
-                        public void onTimeChanged(Date date) { }
-                        @Override
-                        public void onTimeConfirm(Date date, View view) {
-                            SimpleDateFormat format = new SimpleDateFormat("yyyy - MM - dd");
-                            binding.tvMineBirthday.setText(format.format(date));
-                            tempBuddy.setBirth(format.format(date));
+        switch (v.getId()){
+            case R.id.ll_mine_gender:
+                new XPopup.Builder(getContext())
+                        .asBottomList("请选择性别", new String[]{"保密", "男", "女"},
+                                (position, text) -> {
+                                    binding.tvMineGender.setText(text);
+                                    tempBuddy.setGender(position);
+                                }).show();
+                break;
+            case R.id.ll_mine_birthday:
+                Calendar date = Calendar.getInstance();
+                date.set(2000,0,1);
+                TimePickerPopup popup = new TimePickerPopup(getContext())
+                        .setDefaultDate(date)
+                        .setTimePickerListener(new TimePickerListener() {
+                            @Override
+                            public void onTimeChanged(Date date) { }
+                            @Override
+                            public void onTimeConfirm(Date date, View view) {
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy - MM - dd");
+                                binding.tvMineBirthday.setText(format.format(date));
+                                tempBuddy.setBirth(format.format(date));
+                            }
+                        });
+                new XPopup.Builder(getContext())
+                        .asCustom(popup)
+                        .show();
+                break;
+            case R.id.ll_mine_address:
+                CityPickerPopup pop = new CityPickerPopup(getContext());
+                pop.setCityPickerListener(new CityPickerListener() {
+                    @Override
+                    public void onCityConfirm(String province, String city, String area, View v) {
+                        binding.tvMineAddress.setText(province +" - " +city+" - " +area);
+                        tempBuddy.setAddress(province +" - " +city+" - " +area);
+                    }
+                    @Override
+                    public void onCityChange(String province, String city, String area) { }
+                });
+                new XPopup.Builder(getContext())
+                        .asCustom(pop)
+                        .show();
+                break;
+            case R.id.tv_mine_name:
+                new XPopup.Builder(getContext()).asInputConfirm(buddy.getName(), "请输入新的昵称：",
+                        text -> {
+                            binding.tvMineName.setText(text);
+                            tempBuddy.setName(text);
+                        }).show();
+                break;
+            case R.id.iv_mine_avatar_edit:
+                PicFragment picFragment = new PicFragment();
+                Callable<String> callable = path -> {
+                    isChangeAvatar = true;
+                    tempBuddy.setAvatar(path);
+                    binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(path));
+                };
+                picFragment.show(getParentFragmentManager(), "PIC", callable, "确认");
+                break;
+            case R.id.iv_mine_edit:
+                isChangeAvatar = false;
+                binding.ivMineEdit.setVisibility(View.GONE);
+                binding.btnMineSave.setVisibility(View.VISIBLE);
+                binding.btnMineCancel.setVisibility(View.VISIBLE);
+                binding.tvMineName.setBackground(getResources().getDrawable(R.drawable.mine_name_edit_bg));
+                setClickable(true);
+                break;
+            case R.id.btn_mine_save:
+                if(isChangeAvatar){
+                    String uuid = UUID.randomUUID().toString();
+                    String dir_path = getActivity().getFilesDir().getAbsolutePath() + "/pic/";
+                    File file = new File(dir_path);
+                    if(!file.exists()){
+                        file.mkdirs();
+                    }
+                    String path = tempBuddy.getAvatar();
+                    String suffix = path.substring(path.lastIndexOf("."));
+                    file = new File(dir_path + uuid + suffix );
+                    file.createNewFile();
+                    FileUtil.copyFile(path, file.getPath());
+                    Http.sendFile(Msg.PIC, file.getName(), filename -> {
+                        tempBuddy.setAvatar(filename);
+                        buddy = ParcelUtil.copy(this.tempBuddy);
+                        Http.postUser(getContext(), buddy, status -> {
+                            if(status == 200){
+                                viewModel.updateBuddy(buddy);
+                            }else{
+                                ToastUtil.showMsg(getContext(), "更新失败");
+                            }
+                        });
+                    });
+                }else{
+                    buddy = ParcelUtil.copy(this.tempBuddy);
+                    Http.postUser(getContext(), buddy, status -> {
+                        if(status == 200){
+                            viewModel.updateBuddy(buddy);
+                        }else{
+                            ToastUtil.showMsg(getContext(), "更新失败");
                         }
                     });
-            new XPopup.Builder(getContext())
-                    .asCustom(popup)
-                    .show();
-
-        }else if(v == binding.llMineAddress){
-
-            CityPickerPopup popup = new CityPickerPopup(getContext());
-            popup.setCityPickerListener(new CityPickerListener() {
-                @Override
-                public void onCityConfirm(String province, String city, String area, View v) {
-                    binding.tvMineAddress.setText(province +" - " +city+" - " +area);
-                    tempBuddy.setAddress(province +" - " +city+" - " +area);
                 }
-                @Override
-                public void onCityChange(String province, String city, String area) { }
-            });
-            new XPopup.Builder(getContext())
-                    .asCustom(popup)
-                    .show();
-
-        }else if(v == binding.tvMineName){
-
-            new XPopup.Builder(getContext()).asInputConfirm(buddy.getName(), "请输入新的昵称：",
-                text -> {
-                    binding.tvMineName.setText(text);
-                    tempBuddy.setName(text);
-                }).show();
-
-        }else if(v == binding.ivMineAvatarEdit){
-
-            PicFragment picFragment = new PicFragment();
-            Callable<String> callable = path -> {
-                String uuid = UUID.randomUUID().toString();
-                binding.ivMineAvatar.setImageBitmap(BitmapFactory.decodeFile(path));
-                String dir_path = getActivity().getFilesDir().getAbsolutePath() + "/pic/";
-                File file = new File(dir_path);
-                if(!file.exists()){
-                    file.mkdirs();
+                setClickable(false);
+                binding.tvMineName.setBackground(null);
+                binding.ivMineEdit.setVisibility(View.VISIBLE);
+                binding.btnMineSave.setVisibility(View.GONE);
+                binding.btnMineCancel.setVisibility(View.GONE);
+                break;
+            case R.id.btn_mine_cancel:
+                tempBuddy = ParcelUtil.copy(this.buddy);
+                setClickable(false);
+                binding.tvMineName.setBackground(null);
+                binding.ivMineEdit.setVisibility(View.VISIBLE);
+                binding.btnMineSave.setVisibility(View.GONE);
+                binding.btnMineCancel.setVisibility(View.GONE);
+                initBuddy();
+                break;
+            case R.id.iv_mine_avatar:
+                if(buddy.getAvatar() != null){
+                    new XPopup.Builder(getActivity())
+                            .asImageViewer((ImageView) v, buddy.getAvatar(), new ImageLoader())
+                            .isShowSaveButton(false)
+                            .show();
                 }
-                String suffix = path.substring(path.lastIndexOf("."));
-                file = new File(dir_path + uuid + suffix );
-                file.createNewFile();
-                FileUtil.copyFile(path, file.getPath());
-                tempBuddy.setAvatar(file.getPath());
-            };
-            picFragment.show(getParentFragmentManager(), "PIC", callable, "确认");
-
-        }else if(v == binding.ivMineEdit){
-
-            binding.ivMineEdit.setVisibility(View.GONE);
-            binding.btnMineSave.setVisibility(View.VISIBLE);
-            binding.btnMineCancel.setVisibility(View.VISIBLE);
-            binding.tvMineName.setBackground(getResources().getDrawable(R.drawable.mine_name_edit_bg));
-            setClickable(true);
-
-        }else if(v == binding.btnMineSave){
-
-            buddy = ParcelUtil.copy(this.tempBuddy);
-            viewModel.updateBuddy(buddy);
-            setClickable(false);
-            binding.tvMineName.setBackground(null);
-            binding.ivMineEdit.setVisibility(View.VISIBLE);
-            binding.btnMineSave.setVisibility(View.GONE);
-            binding.btnMineCancel.setVisibility(View.GONE);
-
-        }else if(v == binding.btnMineCancel){
-
-            tempBuddy = ParcelUtil.copy(this.buddy);
-            setClickable(false);
-            binding.tvMineName.setBackground(null);
-            binding.ivMineEdit.setVisibility(View.VISIBLE);
-            binding.btnMineSave.setVisibility(View.GONE);
-            binding.btnMineCancel.setVisibility(View.GONE);
-            initBuddy();
-
-        }else if(v == binding.ivMineAvatar){
-
-            new XPopup.Builder(getActivity())
-                    .asImageViewer((ImageView) v, buddy.getAvatar(), new ImageLoader())
-                    .isShowSaveButton(false)
-                    .show();
-
-        }else if(v == binding.btnMineLogout){
-
-            new XPopup.Builder(getContext()).asConfirm(buddy.getName(), "是否要退出登录？",
-                    () -> {
-                        
-                    })
-                    .show();
-
+                break;
+            case R.id.btn_mine_logout:
+                new XPopup.Builder(getContext()).asConfirm(buddy.getName(), "是否要退出登录？",
+                        () -> {
+                            MMKVUitl.save(DataKeyConst.TOKEN, "");
+                            Intent intent = new Intent(getContext(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                        })
+                        .show();
+                break;
         }
     }
 

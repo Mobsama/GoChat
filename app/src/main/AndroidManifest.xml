@@ -27,7 +27,7 @@
         android:theme="@style/Theme.GoChat"
         tools:targetApi="n">
 
-        <activity android:name=".websocket.DebugActivity">
+        <activity android:name=".socketIO.DebugActivity">
         </activity>
         <activity android:name=".view.ui.add.NewBuddyActivity" />
         <activity
@@ -46,18 +46,13 @@
         <activity
             android:name=".view.ui.login.ForgotPassActivity"
             android:parentActivityName=".view.ui.login.LoginActivity" />
-        <activity android:name=".Main2Activity" />
         <activity
             android:name=".view.ui.login.RegisterActivity"
             android:parentActivityName=".view.ui.login.LoginActivity" />
         <activity android:name=".view.ui.login.LoginActivity" />
 
 
-        <service
-            android:name=".websocket.JWebSocketClientService"
-            android:enabled="true" />
-
-        <service android:name=".websocket.SocketIOClientService"
+        <service android:name=".socketIO.SocketIOClientService"
             android:enabled="true"/>
 
     </application>

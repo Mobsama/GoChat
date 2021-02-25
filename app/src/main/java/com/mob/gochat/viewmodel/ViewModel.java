@@ -28,11 +28,12 @@ public class ViewModel extends AndroidViewModel {
     private final RoomDataBase dataBase;
     private final Socket socket = MainApp.getInstance().getSocket();
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
-    private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private String userId;
 
     public ViewModel(@NonNull Application application) {
         super(application);
         dataBase = RoomDataBase.getInstance(application);
+        userId =  MMKVUitl.getString(DataKeyConst.USER_ID);
     }
 
     @NonNull
@@ -52,6 +53,7 @@ public class ViewModel extends AndroidViewModel {
 
     @NonNull
     public LiveData<Buddy> getBuddy(@NonNull String buddyId){
+        userId =  MMKVUitl.getString(DataKeyConst.USER_ID);
         return dataBase.buddyDao().getBuddyById(buddyId, userId);
     }
 
@@ -107,11 +109,7 @@ public class ViewModel extends AndroidViewModel {
             case Msg.PIC:
             case Msg.VOICE:
                 Http.sendFile(msg.getMsgType(), msg.getMsg(), s -> {
-                    if (s.equals("success")){
-                        sendText(context, msg, msgJson);
-                    }else{
-                        ToastUtil.showMsg(context, "发送失败");
-                    }
+                    sendText(context, msg, msgJson);
                 });
                 break;
         }

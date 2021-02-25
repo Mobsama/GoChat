@@ -1,19 +1,26 @@
 package com.mob.gochat.view.ui.login;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.mob.gochat.MainActivity;
+import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityLoginBinding;
 import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.Sha256Util;
@@ -28,11 +35,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private ActivityLoginBinding binding;
     ViewModel viewModel;
+    private Context context;
+    LifecycleOwner lifecycleOwner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        context = this;
+        lifecycleOwner = this;
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
         binding.btnLogin.setOnClickListener(this);
         binding.tvRegister.setOnClickListener(this);
@@ -41,50 +52,65 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        Intent intent;
         switch (v.getId()){
             case R.id.btn_login:
                 if(TextUtils.isEmpty(binding.etMail.getText())
                         || TextUtils.isEmpty(binding.etPassword.getText())){
-                    Toast.makeText(LoginActivity.this,"请输入全部信息",Toast.LENGTH_LONG).show();
+                    Toast.makeText(context,"请输入全部信息",Toast.LENGTH_LONG).show();
                 }else{
-                    Http.postLogin(LoginActivity.this, binding.etMail.getText().toString()
+                    Http.postLogin(context, binding.etMail.getText().toString()
                             , Sha256Util.getSHA256(binding.etPassword.getText().toString()), s -> {
                                 try{
                                     JSONObject object = new JSONObject(s);
                                     String token = object.getString("token");
-                                    String id = object.getString("id");
-                                    MMKVUitl.save(DataKeyConst.TOKEN, token);
-                                    MMKVUitl.save(DataKeyConst.USER_ID, id);
-                                    viewModel.getBuddy(id).observe(LoginActivity.this, b -> {
-                                        if(b == null){
-                                            Http.getUser(LoginActivity.this, id, new Callable<Buddy>() {
-                                                @Override
-                                                public void call(Buddy buddy) throws IOException {
-                                                    viewModel.insertBuddy(buddy);
-                                                    Intent intent1 = new Intent(LoginActivity.this, MainActivity.class);
-                                                    startActivity(intent1);
-                                                    LoginActivity.this.finish();
+                                    String id = object.getInt("id") + "";
+                                    if(MMKVUitl.getString(DataKeyConst.TOKEN) == null || MMKVUitl.getString(DataKeyConst.TOKEN).equals("")){
+                                        MMKVUitl.save(DataKeyConst.USER_ID, id);
+                                        Http.getUser(context, id, id, str -> {
+                                            PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+                                            if(request.getStatus() == 200){
+                                                Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
+                                                if(buddy.getAvatar() != null || !buddy.getAvatar().equals("")){
+                                                    Log.d("LOGIN", buddy.getAvatar());
+                                                    Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
+                                                        viewModel.insertBuddy(buddy);
+                                                        MMKVUitl.save(DataKeyConst.TOKEN, token);
+                                                        gotoMain();
+                                                    });
                                                 }
-                                            });
-                                        }else{
-                                            Intent intent1 = new Intent(LoginActivity.this, MainActivity.class);
-                                            startActivity(intent1);
-                                            LoginActivity.this.finish();
-                                        }
-                                    });
+                                            }
+                                        });
+                                    }else{
+                                        MMKVUitl.save(DataKeyConst.USER_ID, id);
+                                        MMKVUitl.save(DataKeyConst.TOKEN, token);
+                                        gotoMain();
+                                    }
                                 }catch (Exception ignored){ }
                             });
                 }
                 break;
             case R.id.tv_register:
-                intent = new Intent(LoginActivity.this,RegisterActivity.class);
-                startActivity(intent);
+                gotoRegister();
                 break;
             case R.id.tv_forgot:
-                intent = new Intent(LoginActivity.this,ForgotPassActivity.class);
-                startActivity(intent);
+                gotoForgot();
                 break;
         }
+    }
+
+    private void gotoMain(){
+        Intent intent = new Intent(context, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void gotoRegister(){
+        Intent intent = new Intent(context,RegisterActivity.class);
+        startActivity(intent);
+    }
+
+    private void gotoForgot(){
+        Intent intent = new Intent(context,ForgotPassActivity.class);
+        startActivity(intent);
     }
 }

@@ -9,6 +9,7 @@ import androidx.room.Ignore;
 import androidx.room.Index;
 
 import com.github.promeg.pinyinhelper.Pinyin;
+import com.google.gson.annotations.Expose;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -21,26 +22,31 @@ import lombok.Setter;
 public class Buddy implements Parcelable {
     @Getter
     @NotNull
+    @Expose
     @ColumnInfo(name = "id", typeAffinity = ColumnInfo.TEXT)
     private final String id;
 
     @NotNull
     @Getter
+    @Expose
     @ColumnInfo(name = "user", typeAffinity = ColumnInfo.TEXT)
     private final String user;
 
     @Setter
     @Getter
+    @Expose
     @ColumnInfo(name = "avatar", typeAffinity = ColumnInfo.TEXT)
     private String avatar;
 
     @Setter
     @Getter
+    @Expose
     @ColumnInfo(name = "name", typeAffinity = ColumnInfo.TEXT)
     private String name;
 
     @Setter
     @Getter
+    @Expose
     @ColumnInfo(name = "mail", typeAffinity = ColumnInfo.TEXT)
     private String mail;
 
@@ -50,22 +56,26 @@ public class Buddy implements Parcelable {
 
     @Getter
     @Setter
+    @Expose
     @ColumnInfo(name = "birth", typeAffinity = ColumnInfo.TEXT)
     private String birth;
 
     @Getter
     @Setter
+    @Expose
     @ColumnInfo(name = "address", typeAffinity = ColumnInfo.TEXT)
     private String address;
 
     @Getter
     @Setter
+    @Expose
     @ColumnInfo(name = "gender", typeAffinity = ColumnInfo.INTEGER)
     private int gender;
 
     @Getter
     @Setter
     @Ignore
+    @Expose(serialize = false, deserialize = false)
     private String letters;
 
     public Buddy(@NotNull String id, @NotNull String user, String name, String avatar, String mail, String birth, String address, int gender){

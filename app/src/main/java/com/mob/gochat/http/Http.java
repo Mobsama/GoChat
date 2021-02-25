@@ -1,6 +1,7 @@
 package com.mob.gochat.http;
 
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -81,14 +82,14 @@ public class Http {
                 .addFile("file", file.getName(), file)
                 .asString()
                 .subscribe(s -> {
+                    Log.d("FILE", "ERROR");
                     PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
                     if(request.getStatus() == 200){
-                        callable.call("success");
-                    }else{
-                        callable.call("error");
+                        Log.d("FILE", file.getName());
+                        callable.call(file.getName());
                     }
                 }, throwable -> {
-                    callable.call("error");
+                    Log.d("FILE", "ERROR");
                 });
     }
 
@@ -107,7 +108,7 @@ public class Http {
         });
     }
 
-    public static void getFile(int type, String name, Callable<String> callable){
+    public static void getFile(Context context, int type, String name, Callable<String> callable) {
         String getType;
         if(type == Msg.PIC){
             getType = "/pic/";
@@ -115,11 +116,9 @@ public class Http {
             getType = "/audio/";
         }
         RxHttp.get(getType + name)
-                .asDownload(MainApp.getInstance().getFilesDir().getAbsolutePath() + getType + name)
-                .subscribe(path -> {
-                    callable.call(path);
-                }, throwable -> {
-
+                .asDownload(context.getFilesDir().getAbsolutePath() + getType + name)
+                .subscribe(callable::call, throwable -> {
+                    Log.d("GET_FILE", "ERROR");
                 });
     }
 
@@ -131,12 +130,13 @@ public class Http {
                 .subscribe(s -> {
                     PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
                     if(request.getStatus() == 200){
-                        callable.call(s);
+                        callable.call(request.getMessage());
                     }else {
-                        ToastUtil.showMsg(context, request.getMessage());
+                        ThreadToast(context, request.getMessage());
                     }
                 }, throwable -> {
-                    ToastUtil.showMsg(context, "连接服务器失败");
+                    Log.d("LOGIN", "ERROR");
+                    ThreadToast(context,"连接服务器失败");
                 });
     }
 
@@ -149,13 +149,15 @@ public class Http {
                 .asString()
                 .subscribe(s -> {
                     PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    Log.d("request", request.getMessage());
                     if(request.getStatus() == 200){
-                        callable.call(s);
-                    }else if(request.getStatus() == 300){
-                        ToastUtil.showMsg(context, request.getMessage());
+                        callable.call(request.getMessage());
+                    }else{
+                        ThreadToast(context, request.getMessage());
                     }
                 }, throwable -> {
-                    ToastUtil.showMsg(context, "连接服务器失败");
+                    Log.d("request", "ERROR");
+                    ThreadToast(context, "连接服务器失败");
                 });
     }
 
@@ -168,36 +170,61 @@ public class Http {
                 .subscribe(s -> {
                     PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
                     if(request.getStatus() == 200){
-                        callable.call(s);
-                    }else if(request.getStatus() == 300){
-                        ToastUtil.showMsg(context, request.getMessage());
+                        callable.call(request.getMessage());
+                    }else{
+                        ThreadToast(context, request.getMessage());
                     }
                 }, throwable -> {
-                    ToastUtil.showMsg(context, "连接服务器失败");
+                    Log.d("Forgot", "ERROR");
+                    ThreadToast(context, "连接服务器失败");
                 });
     }
 
-    public static void getCode(Context context, String mail, Callable<String> callable){
+    public static void getCode(Context context, String mail, Callable<Integer> callable){
         RxHttp.get(URL.code)
                 .add("mail", mail)
                 .asString()
                 .subscribe(s -> {
                     PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
-                    if(request.getStatus() == 200){
-                        callable.call(s);
-                    }else if(request.getStatus() == 300){
-                        ToastUtil.showMsg(context, "发送验证码失败");
-                    }
+                    callable.call(request.getStatus());
                 }, throwable -> {
-                    ToastUtil.showMsg(context, "连接服务器失败");
+                    Log.d("code", "ERROR");
+                    ThreadToast(context, "连接服务器失败");
                 });
     }
 
-    public static void getUser(Context context, String id, Callable<Buddy> callable){
+    public static void getUser(Context context, String id, String userId, Callable<String> callable){
         RxHttp.get(URL.user)
-                .add("id",id)
-                .asClass(Buddy.class)
-                .subscribe(callable::call
-                        , throwable -> ToastUtil.showMsg(context, "找不到用户哦"));
+                .add("number",id)
+                .add("userId", userId)
+                .asString()
+                .subscribe(s -> callable.call(s), throwable -> {
+                    Log.d("get_user", "ERROR");
+                    ThreadToast(context, "连接服务器失败");
+                });
+    }
+
+    public static void postUser(Context context, Buddy buddy, Callable<Integer> callable){
+        RxHttp.postForm(URL.user)
+                .add("number",buddy.getId())
+                .add("name", buddy.getName())
+                .add("gender", buddy.getGender() + "")
+                .add("birth", buddy.getBirth())
+                .add("address", buddy.getAddress())
+                .add("avatar", buddy.getAvatar())
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    callable.call(request.getStatus());
+                }, throwable -> {
+                    Log.d("post_user", "ERROR");
+                    ThreadToast(context, "连接服务器失败");
+                });
+    }
+
+    private static void ThreadToast(Context context, String msg) {
+        Looper.prepare();
+        ToastUtil.showMsg(context, msg);
+        Looper.loop();
     }
 }
