@@ -91,4 +91,5 @@ public class MMKVUitl {
     public static void clear(String key){
         getInstance().remove(key);
     }
+
 }

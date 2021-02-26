@@ -17,6 +17,7 @@ import com.mob.gochat.MainActivity;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityLoginBinding;
+import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
@@ -64,27 +65,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     JSONObject object = new JSONObject(s);
                                     String token = object.getString("token");
                                     String id = object.getInt("id") + "";
-                                    if(MMKVUitl.getString(DataKeyConst.TOKEN) == null || MMKVUitl.getString(DataKeyConst.TOKEN).equals("")){
-                                        MMKVUitl.save(DataKeyConst.USER_ID, id);
-                                        Http.getUser(context, id, id, str -> {
-                                            PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
-                                            if(request.getStatus() == 200){
-                                                Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
-                                                if(buddy.getAvatar() != null || !buddy.getAvatar().equals("")){
-                                                    Log.d("LOGIN", buddy.getAvatar());
-                                                    Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
-                                                        viewModel.insertBuddy(buddy);
-                                                        MMKVUitl.save(DataKeyConst.TOKEN, token);
-                                                        gotoMain();
-                                                    });
-                                                }
-                                            }
-                                        });
-                                    }else{
-                                        MMKVUitl.save(DataKeyConst.USER_ID, id);
-                                        MMKVUitl.save(DataKeyConst.TOKEN, token);
-                                        gotoMain();
-                                    }
+                                    getUser(token, id);
                                 }catch (Exception ignored){ }
                             });
                 }
@@ -96,6 +77,35 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 gotoForgot();
                 break;
         }
+    }
+
+    public void getUser(String token, String id){
+        Http.getUser(context, id, id, str -> {
+            PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+            if(request.getStatus() == 200){
+                Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
+                buddy.setLettersWithName(buddy.getName());Log.d("LOGIN", buddy.getName());
+                if(buddy.getAvatar() == null){
+                    viewModel.insertBuddy(buddy);
+                    resetMMKV(id, token);
+                    gotoMain();
+                }else{
+                    Log.d("LOGIN", buddy.getName());
+                    Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
+                        viewModel.insertBuddy(buddy);
+                        resetMMKV(id, token);
+                        gotoMain();
+                    });
+                }
+            }
+        });
+    }
+
+    private void resetMMKV(String id, String token){
+        MMKVUitl.clear(DataKeyConst.TOKEN);
+        MMKVUitl.clear(DataKeyConst.USER_ID);
+        MMKVUitl.save(DataKeyConst.USER_ID, id);
+        MMKVUitl.save(DataKeyConst.TOKEN, token);
     }
 
     private void gotoMain(){

@@ -5,6 +5,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 
 import com.mob.gochat.MainApp;
@@ -23,37 +24,36 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import io.socket.client.Socket;
+import lombok.Getter;
 
 public class ViewModel extends AndroidViewModel {
+    @Getter
     private final RoomDataBase dataBase;
     private final Socket socket = MainApp.getInstance().getSocket();
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
-    private String userId;
 
     public ViewModel(@NonNull Application application) {
         super(application);
         dataBase = RoomDataBase.getInstance(application);
-        userId =  MMKVUitl.getString(DataKeyConst.USER_ID);
     }
 
     @NonNull
-    public LiveData<List<Msg>> getChatMsgData(@NonNull String id){
+    public LiveData<List<Msg>> getChatMsgData(@NonNull String id, @NonNull String userId){
         return dataBase.msgDao().getChatMsgList(id, userId);
     }
 
     @NonNull
-    public LiveData<List<Buddy>> getMBuddyData() {
+    public LiveData<List<Buddy>> getMBuddyData(@NonNull String userId) {
         return dataBase.buddyDao().getBuddyList(userId);
     }
 
     @NonNull
-    public LiveData<List<BuddyWithMsgWrapper>> getBuddyWithMsgData() {
+    public LiveData<List<BuddyWithMsgWrapper>> getBuddyWithMsgData(@NonNull String userId) {
         return dataBase.buddyDao().getBuddyWithMsg(userId);
     }
 
     @NonNull
-    public LiveData<Buddy> getBuddy(@NonNull String buddyId){
-        userId =  MMKVUitl.getString(DataKeyConst.USER_ID);
+    public LiveData<Buddy> getBuddy(@NonNull String buddyId, @NonNull String userId){
         return dataBase.buddyDao().getBuddyById(buddyId, userId);
     }
 
@@ -74,21 +74,21 @@ public class ViewModel extends AndroidViewModel {
 
     }
 
-    public void updateMsgStatue(@NonNull String buddyId){
+    public void updateMsgStatue(@NonNull String buddyId, @NonNull String userId){
         mExecutor.execute(() -> dataBase.msgDao().updateMsgStatus(buddyId, userId));
     }
 
-    public void deleteMsgWithBuddyId(@NonNull String buddyId){
+    public void deleteMsgWithBuddyId(@NonNull String buddyId, @NonNull String userId){
         mExecutor.execute(() -> dataBase.msgDao().deleteMsgWithBuddyId(buddyId, userId));
     }
 
     @NonNull
-    public LiveData<List<Request>> getRequestData(){
+    public LiveData<List<Request>> getRequestData(@NonNull String userId){
         return dataBase.requestDao().getRequestList(userId);
     }
 
     @NonNull
-    public LiveData<Integer> getUntreatedRequestNum(){
+    public LiveData<Integer> getUntreatedRequestNum(@NonNull String userId){
         return dataBase.requestDao().getRequestUntreatedNum(userId);
     }
 
@@ -101,25 +101,32 @@ public class ViewModel extends AndroidViewModel {
     }
 
     public void sendMsg(@NonNull Context context, @NonNull Msg msg){
-        String[] msgJson = new String[]{MainApp.getInstance().getGson().toJson(msg)};
         switch (msg.getMsgType()){
             case Msg.TEXT:
-                sendText(context, msg, msgJson);
+                sendText(context, msg);
                 break;
             case Msg.PIC:
             case Msg.VOICE:
                 Http.sendFile(msg.getMsgType(), msg.getMsg(), s -> {
-                    sendText(context, msg, msgJson);
+                    sendText(context, msg);
                 });
                 break;
         }
     }
 
-    private void sendText(Context context, Msg msg, String[] msgJson){
-        Http.sendText(msg, msgJson, s -> {
+    private void sendText(Context context, Msg msg){
+        Http.sendText(msg, s -> {
             if (s.equals("success")){
                 insertMsg(msg);
             }else{
+                ToastUtil.showMsg(context, "发送失败");
+            }
+        });
+    }
+
+    public void sendRequest(Context context, Request request){
+        Http.sendRequest(request, s -> {
+            if (!s.equals("success")){
                 ToastUtil.showMsg(context, "发送失败");
             }
         });

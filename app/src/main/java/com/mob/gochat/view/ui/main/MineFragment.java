@@ -49,7 +49,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
     FragmentMineBinding binding;
     private ViewModel viewModel;
     private Buddy buddy, tempBuddy;
-    private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private String userId;
     private boolean isChangeAvatar = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,7 +57,8 @@ public class MineFragment extends Fragment implements View.OnClickListener {
         binding = FragmentMineBinding.inflate(inflater, container, false);
         viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
         initOnClick();
-        viewModel.getBuddy(userId).observe(getActivity(), buddy -> {
+        userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+        viewModel.getBuddy(userId, userId).observe(getActivity(), buddy -> {
             this.buddy = buddy;
             this.tempBuddy = ParcelUtil.copy(this.buddy);
             initBuddy();
@@ -233,7 +234,9 @@ public class MineFragment extends Fragment implements View.OnClickListener {
             case R.id.btn_mine_logout:
                 new XPopup.Builder(getContext()).asConfirm(buddy.getName(), "是否要退出登录？",
                         () -> {
-                            MMKVUitl.save(DataKeyConst.TOKEN, "");
+                            MMKVUitl.clear(DataKeyConst.TOKEN);
+                            MMKVUitl.clear(DataKeyConst.USER_ID);
+                            MainApp.getInstance().stopSocketIO();
                             Intent intent = new Intent(getContext(), LoginActivity.class);
                             startActivity(intent);
                             getActivity().finish();

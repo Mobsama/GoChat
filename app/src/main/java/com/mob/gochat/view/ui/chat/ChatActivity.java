@@ -107,17 +107,17 @@ public class ChatActivity extends AppCompatActivity {
         initStatue();
         initAudio();
         initEmotionRecycleView();
-        viewModel.getBuddy(buddyId).observe(this, b -> {
+        viewModel.getBuddy(buddyId, userId).observe(this, b -> {
             buddy = b;
-            viewModel.getBuddy(userId).observe(this, u -> {
+            viewModel.getBuddy(userId, userId).observe(this, u -> {
                 user = u;
                 initTitle();
                 initChatRecycleView();
                 initOnClickListener();
-                viewModel.getChatMsgData(buddyId).observe(this, msgs -> {
+                viewModel.getChatMsgData(buddyId, userId).observe(this, msgs -> {
                     this.msgs.clear();
                     this.msgs.addAll(msgs);
-                    viewModel.updateMsgStatue(buddy.getId());
+                    viewModel.updateMsgStatue(buddy.getId(), userId);
                     chatAdapter.notifyDataSetChanged();
                     chatManager.scrollToPosition(this.msgs.size()-1);
                 });

@@ -18,10 +18,12 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.interfaces.XPopupImageLoader;
+import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityInfoBinding;
 import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.view.base.ImageLoader;
@@ -34,11 +36,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.UUID;
 
 public class InfoActivity extends AppCompatActivity implements View.OnClickListener {
     private ActivityInfoBinding binding;
     private Buddy buddy;
-    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private String userId;
     private ViewModel viewModel;
 
     @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
@@ -50,6 +56,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
             finish();
             return;
         }
+        userId = MMKVUitl.getString(DataKeyConst.USER_ID);
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
         binding = ActivityInfoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -60,7 +67,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                 .enableDirection(SwipeConsumer.DIRECTION_LEFT)
                 .setEdgeSize(100);
 
-        viewModel.getBuddy(buddy.getId()).observe(this, b -> {
+        viewModel.getBuddy(buddy.getId(), userId).observe(this, b -> {
             if(b == null){
                 binding.btnInfoGroup.setVisibility(View.GONE);
                 binding.btnInfoAdd.setVisibility(View.VISIBLE);
@@ -70,7 +77,11 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        initView();
+        initOnClick();
+    }
 
+    private void initView(){
         if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
             binding.tvInfoName.setText(buddy.getName());
             binding.tvInfoNickname.setVisibility(View.GONE);
@@ -82,14 +93,13 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
         if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
             binding.ivInfoAvatar.setImageDrawable(getDrawable(R.drawable.buddy));
         }else{
-            File file = new File(buddy.getAvatar());
+            File file = new File(getFilesDir().getAbsolutePath() + "/pic/" +buddy.getAvatar());
             if(file.exists()){
-                binding.ivInfoAvatar.setImageBitmap(BitmapFactory.decodeFile(buddy.getAvatar()));
+                binding.ivInfoAvatar.setImageBitmap(BitmapFactory.decodeFile(file.getPath()));
             }else{
                 binding.ivInfoAvatar.setImageDrawable(getDrawable(R.drawable.buddy));
             }
         }
-
         binding.tvInfoNumber.setText("GoChat号：" + buddy.getId());
         if(buddy.getGender() == 0){
             binding.tvInfoGender.setText("保密");
@@ -100,7 +110,10 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
         }
         binding.tvInfoBirthday.setText(buddy.getBirth());
         binding.tvInfoAddress.setText(buddy.getAddress());
+    }
 
+    private void initOnClick(){
+        binding.btnInfoAdd.setOnClickListener(this);
         binding.btnInfoChat.setOnClickListener(this);
         binding.btnInfoDelete.setOnClickListener(this);
         binding.ivInfoAvatar.setOnClickListener(this);
@@ -118,36 +131,52 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if(v == binding.btnInfoChat){
-            Intent intent = new Intent(this, ChatActivity.class);
-            intent.putExtra("buddy",buddy.getId());
-            intent.putExtra("user", userId);
-            startActivity(intent);
-            finish();
-        }else if(v == binding.btnInfoDelete){
-            String name;
-            if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
-                name = buddy.getName();
-            }else{
-                name = buddy.getRemarks();
-            }
-            new XPopup.Builder(this).asConfirm(name, "是否要删除"+name+"？",
-                    () -> {
-                        viewModel.deleteBuddy(buddy);
-                        finish();
-                    })
-                    .show();
-        }else if(v == binding.ivInfoAvatar){
-            if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
-                return;
-            }
-            if(!(new File(buddy.getAvatar())).exists()){
-                return;
-            }
-            new XPopup.Builder(this)
-                    .asImageViewer((ImageView) v, buddy.getAvatar(), new ImageLoader())
-                    .isShowSaveButton(false)
-                    .show();
+        switch (v.getId()){
+            case R.id.btn_info_chat:
+                Intent intent = new Intent(this, ChatActivity.class);
+                intent.putExtra("buddy",buddy.getId());
+                intent.putExtra("user", userId);
+                startActivity(intent);
+                finish();
+                break;
+            case R.id.btn_info_delete:
+                String name;
+                if(buddy.getRemarks() == null || buddy.getRemarks().equals("")){
+                    name = buddy.getName();
+                }else{
+                    name = buddy.getRemarks();
+                }
+                new XPopup.Builder(this).asConfirm(name, "是否要删除"+name+"？",
+                        () -> {
+                            viewModel.deleteBuddy(buddy);
+                            finish();
+                        })
+                        .show();
+                break;
+            case R.id.btn_info_add:
+                viewModel.getBuddy(userId, userId).observe(this, user -> {
+                    String uuid = UUID.randomUUID().toString();
+                    Date date = new Date(System.currentTimeMillis());
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                    Request request = new Request(uuid, buddy.getId(), user.getId(), user.getName(), user.getAvatar(), format.format(date));
+                    viewModel.sendRequest(this, request);
+                    finish();
+                });
+                break;
+            case R.id.iv_info_avatar:
+                if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
+                    return;
+                }
+                File file = new File(getFilesDir().getAbsolutePath() + "/pic/" +buddy.getAvatar());
+                if(!file.exists()){
+                    return;
+                }
+                new XPopup.Builder(this)
+                        .asImageViewer((ImageView) v, file.getPath(), new ImageLoader())
+                        .isShowSaveButton(false)
+                        .show();
+                break;
         }
     }
 }

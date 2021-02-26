@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
 import com.kunminx.architecture.ui.callback.UnPeekLiveData;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Dao
 public interface MsgDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertMsg(Msg msg);
 
     @Delete

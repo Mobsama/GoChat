@@ -91,6 +91,12 @@ public class MainApp extends Application {
         return isIgnoring;
     }
 
+    public void stopSocketIO(){
+        socket.disconnect();
+        stopService(new Intent(getBaseContext(), SocketIOClientService.class));
+        unbindService(serviceConnection);
+    }
+
     public void startSocketIO(){
         startService();
         bindService();

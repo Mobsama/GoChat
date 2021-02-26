@@ -41,7 +41,7 @@ public class MsgFragment extends Fragment {
     FragmentMsgBinding binding;
     MsgAdapter adapter;
     Buddy user;
-    private final static String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private String userId;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -49,8 +49,8 @@ public class MsgFragment extends Fragment {
         viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
         dataBase = RoomDataBase.getInstance(getContext());
         initRecyclerView();
-
-        viewModel.getBuddyWithMsgData().observe(getActivity(), msgs -> {
+        userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+        viewModel.getBuddyWithMsgData(userId).observe(getActivity(), msgs -> {
             this.buddyWithMsgWrappers.clear();
             this.buddyWithMsgWrappers.addAll(msgs);
             if(buddyWithMsgWrappers.isEmpty()){
@@ -64,7 +64,7 @@ public class MsgFragment extends Fragment {
             this.adapter.notifyDataSetChanged();
         });
 
-        viewModel.getBuddy(userId).observe(getActivity(), buddy -> {
+        viewModel.getBuddy(userId, userId).observe(getActivity(), buddy -> {
             this.user = buddy;
         });
         return binding.getRoot();
@@ -98,7 +98,7 @@ public class MsgFragment extends Fragment {
                 }
                 new XPopup.Builder(getContext()).asConfirm(name, "是否要删除与"+name+"的聊天记录？",
                         () -> {
-                            viewModel.deleteMsgWithBuddyId(buddy.getId());
+                            viewModel.deleteMsgWithBuddyId(buddy.getId(), userId);
                         })
                         .show();
             }

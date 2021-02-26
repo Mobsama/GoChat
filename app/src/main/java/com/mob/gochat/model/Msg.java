@@ -84,6 +84,7 @@ public class Msg implements MultiItemEntity {
     private String time;
 
     @Getter
+    @Setter
     @Expose()
     @ColumnInfo(name = "type", typeAffinity = ColumnInfo.INTEGER)
     private int type;

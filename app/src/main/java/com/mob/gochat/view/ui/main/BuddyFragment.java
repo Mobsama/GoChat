@@ -42,7 +42,7 @@ public class BuddyFragment extends Fragment {
     private List<Buddy> buddies = new ArrayList<>();
     private BuddyAdapter buddyAdapter;
     private LinearLayoutManager buddyManager;
-    private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
+    private String userId;
     private final Buddy newBuddy = new Buddy("0","0","新的朋友",null,null, null, null, 0);
     private Buddy user;
 
@@ -52,8 +52,9 @@ public class BuddyFragment extends Fragment {
         newBuddy.setLetters("↑");
         this.buddies.add(0, newBuddy);
         initRecycleView();
+        userId = MMKVUitl.getString(DataKeyConst.USER_ID);
         viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
-        viewModel.getMBuddyData().observe(getActivity(), buddies -> {
+        viewModel.getMBuddyData(userId).observe(getActivity(), buddies -> {
             this.buddies.clear();
             this.buddies.addAll(buddies);
             try {
@@ -76,14 +77,12 @@ public class BuddyFragment extends Fragment {
             this.buddies.add(0, newBuddy);
             buddyAdapter.notifyDataSetChanged();
         });
-        viewModel.getBuddy(userId).observe(getActivity(), buddy -> {
+        viewModel.getBuddy(userId, userId).observe(getActivity(), buddy -> {
             this.user = buddy;
         });
-        viewModel.getUntreatedRequestNum().observe(getActivity(), num -> {
+        viewModel.getUntreatedRequestNum(userId).observe(getActivity(), num -> {
             if(num != 0){
-                buddies.remove(0);
-                newBuddy.setGender(num);
-                buddies.add(0, newBuddy);
+                buddies.get(0).setGender(num);
                 buddyAdapter.notifyDataSetChanged();
             }
         });

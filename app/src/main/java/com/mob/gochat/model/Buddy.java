@@ -100,7 +100,7 @@ public class Buddy implements Parcelable {
         }
     }
 
-    private void setLettersWithName(String s){
+    public void setLettersWithName(String s){
         char c;
         if(Pinyin.isChinese(s.charAt(0))){
             c = Pinyin.toPinyin(s.charAt(0)).toUpperCase().charAt(0);

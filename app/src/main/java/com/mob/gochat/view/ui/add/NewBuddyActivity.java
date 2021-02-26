@@ -19,6 +19,7 @@ import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityNewBuddyBinding;
 import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.Msg;
 import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
@@ -55,7 +56,7 @@ public class NewBuddyActivity extends AppCompatActivity {
                 .setEdgeSize(100);
         initRecyclerView();
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
-        viewModel.getRequestData().observe(this, requests -> {
+        viewModel.getRequestData(userId).observe(this, requests -> {
             requestList.clear();
             requestList.addAll(requests);
             adapter.notifyDataSetChanged();
@@ -78,9 +79,17 @@ public class NewBuddyActivity extends AppCompatActivity {
                         PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
                         if(request.getStatus() == 200){
                             Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
-                            Intent intent = new Intent(this, InfoActivity.class);
-                            intent.putExtra("buddy", buddy);
-                            startActivity(intent);
+                            if(buddy.getAvatar() == null){
+                                Intent intent = new Intent(this, InfoActivity.class);
+                                intent.putExtra("buddy", buddy);
+                                startActivity(intent);
+                            }else{
+                                Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
+                                    Intent intent = new Intent(this, InfoActivity.class);
+                                    intent.putExtra("buddy", buddy);
+                                    startActivity(intent);
+                                });
+                            }
                         }else{
                             ToastUtil.showMsg(this, "找不到联系人");
                         }

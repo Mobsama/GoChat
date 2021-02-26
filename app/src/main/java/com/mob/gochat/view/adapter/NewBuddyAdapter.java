@@ -24,9 +24,9 @@ public class NewBuddyAdapter extends BaseQuickAdapter<Request, BaseViewHolder> {
         if(request.getBuddyAvatar() == null || request.getBuddyAvatar().equals("")){
             baseViewHolder.setImageDrawable(R.id.new_buddy_avatar, getContext().getDrawable(R.drawable.buddy));
         }else{
-            File file = new File(request.getBuddyAvatar());
+            File file = new File(getContext().getFilesDir().getAbsolutePath() + "/pic/" + request.getBuddyAvatar());
             if(file.exists()){
-                baseViewHolder.setImageBitmap(R.id.new_buddy_avatar, BitmapFactory.decodeFile(request.getBuddyAvatar()));
+                baseViewHolder.setImageBitmap(R.id.new_buddy_avatar, BitmapFactory.decodeFile(file.getPath()));
             }else{
                 baseViewHolder.setImageDrawable(R.id.new_buddy_avatar, getContext().getDrawable(R.drawable.buddy));
             }

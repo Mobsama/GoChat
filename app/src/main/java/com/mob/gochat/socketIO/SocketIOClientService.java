@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +21,8 @@ import androidx.lifecycle.LiveData;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lxj.xpopup.XPopup;
+import com.mob.gochat.MainActivity;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.db.RoomDataBase;
@@ -30,11 +33,15 @@ import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
+import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -47,6 +54,7 @@ public class SocketIOClientService extends Service {
     RoomDataBase dataBase;
     private NotificationManager mManager;
     private final SocketIOClientBinder mBinder = new SocketIOClientBinder();
+    private final Executor mExecutor = Executors.newSingleThreadExecutor();
 
     private LiveData<Buddy> buddy,user;
 
@@ -98,36 +106,41 @@ public class SocketIOClientService extends Service {
         });
         socket.on("message", args -> {
             Msg msg = gson.fromJson(args[0].toString(), Msg.class);
+            msg.setType(Msg.FRI);
             switch (msg.getMsgType()){
                 case Msg.TEXT:
                     sendNotifications(msg);
-                    new Thread(() -> dataBase.msgDao().insertMsg(msg)).start();
+                    mExecutor.execute(() -> dataBase.msgDao().insertMsg(msg));
                     break;
                 case Msg.PIC:
                 case Msg.VOICE:
-                    try {
-                        Http.getFile(getBaseContext(), msg.getMsgType(), msg.getMsg(), s -> new Thread(() -> dataBase.msgDao().insertMsg(msg)).start());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    Http.getFile(getBaseContext(), msg.getMsgType(), msg.getMsg(), s -> mExecutor.execute(() -> dataBase.msgDao().insertMsg(msg)));
                     break;
             }
         });
         socket.on("request", args -> {
+            Log.d("REQUEST", args[0].toString());
             Request request = gson.fromJson(args[0].toString(), Request.class);
-            try {
-                Http.getFile(getBaseContext(), Msg.PIC, request.getBuddyAvatar(), s -> new Thread(() -> dataBase.requestDao().insertRequest(request)).start());
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(request.getBuddyAvatar() == null){
+                mExecutor.execute(() -> dataBase.requestDao().insertRequest(request));
+            }else{
+                Http.getFile(getBaseContext(), Msg.PIC, request.getBuddyAvatar(), s -> mExecutor.execute(() -> dataBase.requestDao().insertRequest(request)));
             }
         });
         socket.on("token", args -> {
             PostRequest postRequest = gson.fromJson(args[0].toString(), PostRequest.class);
             if(postRequest.getStatus() == 200){
+                MMKVUitl.clear(DataKeyConst.USER_ID);
                 MMKVUitl.save(DataKeyConst.USER_ID, postRequest.getMessage());
             }else{
-                //token过期,强制退出
+                MMKVUitl.clear(DataKeyConst.TOKEN);
+                Intent intent = new Intent("gochat.broadcase.LOGOUT");
+                MainActivity.getInstance().getLocalBroadcastManager().sendBroadcast(intent);
             }
+        });
+        socket.on("buddy", args -> {
+            Buddy buddy = gson.fromJson(args[0].toString(), Buddy.class);
+            mExecutor.execute(() -> dataBase.buddyDao().insertBuddy(buddy));
         });
     }
 
