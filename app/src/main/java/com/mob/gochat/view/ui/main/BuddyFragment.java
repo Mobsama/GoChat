@@ -80,12 +80,7 @@ public class BuddyFragment extends Fragment {
         viewModel.getBuddy(userId, userId).observe(getActivity(), buddy -> {
             this.user = buddy;
         });
-        viewModel.getUntreatedRequestNum(userId).observe(getActivity(), num -> {
-            if(num != 0){
-                buddies.get(0).setGender(num);
-                buddyAdapter.notifyDataSetChanged();
-            }
-        });
+
         binding.sbBuddy.setDialog(binding.tvDialog);
 
         binding.sbBuddy.setOnTouchingListener(s -> {
@@ -97,8 +92,18 @@ public class BuddyFragment extends Fragment {
                 }
             }
         });
-
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        viewModel.getUntreatedRequestNum(userId).observe(getActivity(), num -> {
+            if(num != 0){
+                buddies.get(0).setGender(num);
+                buddyAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     private void initRecycleView(){
@@ -132,26 +137,15 @@ public class BuddyFragment extends Fragment {
 
         binding.srvBuddy.setOnItemClickListener((view, adapterPosition) -> {
             if(!ClickUtil.isFastDoubleClick()){
+                Intent intent;
                 if(adapterPosition == 0){
-                    Intent intent = new Intent(getActivity(), NewBuddyActivity.class);
-                    startActivity(intent);
-//                    int size = buddies.size();
-//                    if(size < list.size()){
-//                        Buddy buddy = new Buddy("000"+size, MMKVUitl.getString(DataKeyConst.USER_ID), list.get(size),null, null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
-//                        viewModel.insertBuddy(buddy);
-//                    }
-//                    String uuid = UUID.randomUUID().toString();
-//                    Date date = new Date(System.currentTimeMillis());
-//                    @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//                    format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-//                    Request request = new Request(uuid, userId, "10010", "Test", null, format.format(date), Request.UNTREATED);
-//                    viewModel.insertRequest(request);
+                    intent = new Intent(getActivity(), NewBuddyActivity.class);
                 }else{
-                    Intent intent = new Intent(getActivity(), InfoActivity.class);
+                    intent = new Intent(getActivity(), InfoActivity.class);
                     intent.putExtra("buddy", buddies.get(adapterPosition));
                     intent.putExtra("user", user);
-                    startActivity(intent);
                 }
+                startActivity(intent);
             }
         });
         binding.srvBuddy.setSwipeMenuCreator(mSwipeMenuCreator);

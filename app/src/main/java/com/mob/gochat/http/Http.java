@@ -21,12 +21,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import rxhttp.RxHttp;
 
 public class Http {
@@ -38,47 +32,71 @@ public class Http {
             getType = "/audio/";
         }
         File file = new File(MainApp.getInstance().getBaseContext().getFilesDir().getAbsolutePath() + getType + path);
+        Log.d("SEND_FILE", getType + path);
         RxHttp.postForm(getType + "upload")
                 .addFile("file", file.getName(), file)
                 .asString()
                 .subscribe(s -> {
-                    Log.d("FILE", "ERROR");
                     PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
                     if(request.getStatus() == 200){
-                        Log.d("FILE", file.getName());
                         callable.call(file.getName());
                     }
                 }, throwable -> {
-                    Log.d("FILE", "ERROR");
+                    Log.d("SEND_FILE", "ERROR");
                 });
     }
 
-    public static void sendText(Msg msg, Callable<String> callable){
+    public static void sendText(Msg msg, Callable<Integer> callable){
         String[] msgJson = new String[]{MainApp.getInstance().getGson().toJson(msg)};
         MainApp.getInstance().getSocket().emit("message", msgJson, (args) -> {
             JSONObject object = (JSONObject) args[0];
             try {
-                if(object.getString("status").equals("ok")){
-                    callable.call("success");
-                }else{
-                    callable.call("error");
-                }
+                callable.call(object.getInt("status"));
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }
         });
     }
 
-    public static void sendRequest(Request request, Callable<String> callable){
+    public static void addNewBuddy(String userId, String buddyId, Callable<Integer> callable){
+        MainApp.getInstance().getSocket().emit("add", new String[]{userId, buddyId}, (args) -> {
+            JSONObject object = (JSONObject) args[0];
+            try {
+                callable.call(object.getInt("status"));
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void isBuddy(String userId, String buddyId, Callable<Integer> callable){
+        MainApp.getInstance().getSocket().emit("isBuddy", new String[]{userId, buddyId}, (args) -> {
+            JSONObject object = (JSONObject) args[0];
+            try {
+                callable.call(object.getInt("status"));
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void deleteBuddy(String userId, String buddyId, Callable<Integer> callable){
+        MainApp.getInstance().getSocket().emit("delete", new String[]{userId, buddyId}, (args) -> {
+            JSONObject object = (JSONObject) args[0];
+            try {
+                callable.call(object.getInt("status"));
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void sendRequest(Request request, Callable<Integer> callable){
         String[] reqJson = new String[]{MainApp.getInstance().getGson().toJson(request)};
         MainApp.getInstance().getSocket().emit("request", reqJson, (args) -> {
             JSONObject object = (JSONObject) args[0];
             try {
-                if(object.getString("status").equals("ok")){
-                    callable.call("success");
-                }else{
-                    callable.call("error");
-                }
+                callable.call(object.getInt("status"));
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }

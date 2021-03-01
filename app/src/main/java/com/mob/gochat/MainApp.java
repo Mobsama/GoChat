@@ -16,6 +16,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.socketIO.SocketIOClientService;
 
@@ -37,6 +38,9 @@ public class MainApp extends Application {
     boolean isNet = true;
     @Getter
     private Gson gson;
+    @Setter
+    @Getter
+    private String currBuddy = null;
     SocketIOClientService.SocketIOClientBinder binder;
     SocketIOClientService socketIOClientService;
 

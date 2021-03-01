@@ -28,9 +28,9 @@ public class MsgAdapter extends BaseQuickAdapter<BuddyWithMsgWrapper, BaseViewHo
         if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
             baseViewHolder.setImageDrawable(R.id.iv_msg_avatar, getContext().getDrawable(R.drawable.buddy));
         }else{
-            File file = new File(buddy.getAvatar());
+            File file = new File(getContext().getFilesDir().getAbsolutePath() + "/pic/" + buddy.getAvatar());
             if(file.exists()){
-                baseViewHolder.setImageBitmap(R.id.iv_msg_avatar, BitmapFactory.decodeFile(buddy.getAvatar()));
+                baseViewHolder.setImageBitmap(R.id.iv_msg_avatar, BitmapFactory.decodeFile(file.getPath()));
             }else{
                 baseViewHolder.setImageDrawable(R.id.iv_msg_avatar, getContext().getDrawable(R.drawable.buddy));
             }
@@ -42,15 +42,19 @@ public class MsgAdapter extends BaseQuickAdapter<BuddyWithMsgWrapper, BaseViewHo
             baseViewHolder.setText(R.id.tv_title, buddy.getRemarks());
             sb.append(msg.getType() == Msg.FRI ? buddy.getRemarks()+"：" : "我：");
         }
-        if(msg.getMsgType() == Msg.PIC){
-            sb.append("[图片]");
-        }else if(msg.getMsgType() == Msg.VOICE){
-            sb.append("[语音]");
+        if(msg.getType() == Msg.OTHER){
+            baseViewHolder.setText(R.id.tv_msg_content, msg.getMsg());
         }else{
-            sb.append(msg.getMsg());
+            if(msg.getMsgType() == Msg.PIC){
+                sb.append("[图片]");
+            }else if(msg.getMsgType() == Msg.VOICE){
+                sb.append("[语音]");
+            }else{
+                sb.append(msg.getMsg());
+            }
+            baseViewHolder.setText(R.id.tv_msg_content, sb.toString());
+            baseViewHolder.setText(R.id.tv_msg_time, msg.getTime().substring(11,16));
+            baseViewHolder.setGone(R.id.tv_msg_reddot, msg.isRead());
         }
-        baseViewHolder.setText(R.id.tv_msg_content, sb.toString());
-        baseViewHolder.setText(R.id.tv_msg_time, msg.getTime().substring(11,16));
-        baseViewHolder.setGone(R.id.tv_msg_reddot, msg.isRead());
     }
 }

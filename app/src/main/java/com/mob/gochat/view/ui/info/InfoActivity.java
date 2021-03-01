@@ -5,7 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -13,16 +14,14 @@ import android.widget.ImageView;
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
 import com.lxj.xpopup.XPopup;
-import com.lxj.xpopup.interfaces.XPopupImageLoader;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityInfoBinding;
-import com.mob.gochat.db.RoomDataBase;
+import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.Msg;
+import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
@@ -46,12 +45,14 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
     private Buddy buddy;
     private String userId;
     private ViewModel viewModel;
+    private boolean isBuddy;
 
     @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         buddy = getIntent().getParcelableExtra("buddy");
+        isBuddy = getIntent().getBooleanExtra("isBuddy", false);
         if(buddy == null){
             finish();
             return;
@@ -67,18 +68,51 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                 .enableDirection(SwipeConsumer.DIRECTION_LEFT)
                 .setEdgeSize(100);
 
+        onObserve();
+        updateBuddy();
+        initOnClick();
+    }
+
+    private void onObserve(){
         viewModel.getBuddy(buddy.getId(), userId).observe(this, b -> {
-            if(b == null){
-                binding.btnInfoGroup.setVisibility(View.GONE);
+            if(isBuddy){
+                buddy = b;
+                binding.btnInfoChat.setVisibility(View.VISIBLE);
+                binding.btnInfoDelete.setVisibility(View.VISIBLE);
+                binding.btnInfoAdd.setVisibility(View.GONE);
+            }else if(b != null){
+                buddy = b;
+                binding.btnInfoChat.setVisibility(View.GONE);
+                binding.btnInfoDelete.setVisibility(View.VISIBLE);
                 binding.btnInfoAdd.setVisibility(View.VISIBLE);
             }else{
-                binding.btnInfoGroup.setVisibility(View.VISIBLE);
-                binding.btnInfoAdd.setVisibility(View.GONE);
+                binding.btnInfoChat.setVisibility(View.GONE);
+                binding.btnInfoDelete.setVisibility(View.GONE);
+                binding.btnInfoAdd.setVisibility(View.VISIBLE);
+            }
+            initView();
+        });
+    }
+
+    private void updateBuddy(){
+        Http.getUser(this, buddy.getId(), buddy.getUser(), str -> {
+            PostRequest req = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+            if(req.getStatus() == 200){
+                Buddy b = MainApp.getInstance().getGson().fromJson(req.getMessage(), Buddy.class);
+                buddy.setName(b.getName());
+                buddy.setGender(b.getGender());
+                buddy.setBirth(b.getBirth());
+                buddy.setAddress(b.getAddress());
+                if(b.getAvatar() == null){
+                    viewModel.updateBuddy(buddy);
+                }else{
+                    Http.getFile(this, Msg.PIC, b.getAvatar(), path -> {
+                        buddy.setAvatar(b.getAvatar());
+                        viewModel.updateBuddy(buddy);
+                    });
+                }
             }
         });
-
-        initView();
-        initOnClick();
     }
 
     private void initView(){
@@ -146,9 +180,16 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                 }else{
                     name = buddy.getRemarks();
                 }
-                new XPopup.Builder(this).asConfirm(name, "是否要删除"+name+"？",
-                        () -> {
-                            viewModel.deleteBuddy(buddy);
+                new XPopup.Builder(this).asConfirm(name, "是否要删除"+name+"？", () -> {
+                            if(isBuddy){
+                                viewModel.deleteBuddy(buddy.getId(), buddy.getUser(), s -> {
+                                    if(s){
+                                        viewModel.deleteBuddy(buddy);
+                                    }
+                                });
+                            }else{
+                                viewModel.deleteBuddy(buddy);
+                            }
                             finish();
                         })
                         .show();

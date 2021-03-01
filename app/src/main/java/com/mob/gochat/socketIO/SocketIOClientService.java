@@ -1,5 +1,6 @@
 package com.mob.gochat.socketIO;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,19 +10,18 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.lifecycle.LiveData;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.lxj.xpopup.XPopup;
 import com.mob.gochat.MainActivity;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
@@ -33,13 +33,15 @@ import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 
-import java.io.IOException;
+import java.io.File;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.concurrent.Callable;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -55,9 +57,7 @@ public class SocketIOClientService extends Service {
     private NotificationManager mManager;
     private final SocketIOClientBinder mBinder = new SocketIOClientBinder();
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
-
-    private LiveData<Buddy> buddy,user;
-
+    private static boolean flag = false;
     public class SocketIOClientBinder extends Binder{
         @NonNull
         public SocketIOClientService getService() {
@@ -106,10 +106,12 @@ public class SocketIOClientService extends Service {
         });
         socket.on("message", args -> {
             Msg msg = gson.fromJson(args[0].toString(), Msg.class);
-            msg.setType(Msg.FRI);
+            if(MainApp.getInstance().getCurrBuddy() == null || !MainApp.getInstance().getCurrBuddy().equals(msg.getBuddyId())){
+                flag = true;
+                sendNotifications(msg);
+            }
             switch (msg.getMsgType()){
                 case Msg.TEXT:
-                    sendNotifications(msg);
                     mExecutor.execute(() -> dataBase.msgDao().insertMsg(msg));
                     break;
                 case Msg.PIC:
@@ -119,7 +121,6 @@ public class SocketIOClientService extends Service {
             }
         });
         socket.on("request", args -> {
-            Log.d("REQUEST", args[0].toString());
             Request request = gson.fromJson(args[0].toString(), Request.class);
             if(request.getBuddyAvatar() == null){
                 mExecutor.execute(() -> dataBase.requestDao().insertRequest(request));
@@ -140,7 +141,29 @@ public class SocketIOClientService extends Service {
         });
         socket.on("buddy", args -> {
             Buddy buddy = gson.fromJson(args[0].toString(), Buddy.class);
-            mExecutor.execute(() -> dataBase.buddyDao().insertBuddy(buddy));
+            if(buddy.getAvatar() == null){
+                mExecutor.execute(() -> {
+                    if(dataBase.buddyDao().upsertBuddy(buddy)){
+                        Date date = new Date(System.currentTimeMillis());
+                        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                        String uuid = UUID.randomUUID().toString();
+                        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
+                        dataBase.msgDao().insertMsg(tip);
+                    }
+                });
+            }else{
+                Http.getFile(getBaseContext(), Msg.PIC, buddy.getAvatar(), s -> mExecutor.execute(() -> {
+                    if(dataBase.buddyDao().upsertBuddy(buddy)){
+                        Date date = new Date(System.currentTimeMillis());
+                        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                        String uuid = UUID.randomUUID().toString();
+                        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
+                        dataBase.msgDao().insertMsg(tip);
+                    }
+                }));
+            }
         });
     }
 
@@ -157,20 +180,40 @@ public class SocketIOClientService extends Service {
             String channelName  = "消息";
             createNotificationChannel(channelId, channelName, NotificationManagerCompat.IMPORTANCE_MAX);
         }
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId);
-        builder.setSmallIcon(R.mipmap.go)
-            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.go))
-            .setContentTitle(msg.getBuddyId())
-            .setContentText(msg.getMsg())
-            .setAutoCancel(true);
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("user", msg.getUserId());
-        intent.putExtra("buddy", msg.getBuddyId());
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.setContentIntent(pendingIntent);
-        Notification notification = builder.build();
-        mManager.notify(1, notification);
+        String text = msg.getMsg();
+        if(msg.getMsgType() == Msg.PIC){
+            text = "[图片]";
+        }else if(msg.getMsgType() == Msg.VOICE){
+            text = "[语音]";
+        }
+        String finalText = text;
+        new Handler(Looper.getMainLooper()).post(() -> dataBase.buddyDao().getBuddyById(msg.getBuddyId(), msg.getUserId()).observeForever(buddy -> {
+            if(flag){
+                String title = buddy.getName();
+                if(buddy.getRemarks() != null && !buddy.getRemarks().equals("")){
+                    title = buddy.getRemarks();
+                }
+                builder.setSmallIcon(R.mipmap.go)
+                        .setContentTitle(title)
+                        .setContentText(finalText)
+                        .setAutoCancel(true);
+                File file = new File(getFilesDir().getAbsolutePath() + "/pic/" + buddy.getAvatar());
+                if(file.exists()){
+                    builder.setLargeIcon(BitmapFactory.decodeFile(file.getPath()));
+                }else{
+                    builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.go));
+                }
+                Intent intent = new Intent(SocketIOClientService.this, ChatActivity.class);
+                intent.putExtra("user", msg.getUserId());
+                intent.putExtra("buddy", msg.getBuddyId());
+                PendingIntent pendingIntent = PendingIntent.getActivity(SocketIOClientService.this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                builder.setContentIntent(pendingIntent);
+                Notification notification = builder.build();
+                mManager.notify(1, notification);
+                flag = false;
+            }
+        }));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

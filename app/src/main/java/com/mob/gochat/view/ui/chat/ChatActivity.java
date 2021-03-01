@@ -67,6 +67,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import lombok.Getter;
+
 public class ChatActivity extends AppCompatActivity {
 
     private PanelSwitchHelper mHelper;
@@ -75,7 +77,9 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView mRVEmotion;
     private FloatingActionButton mFABDelete;
     private ImageButton mBtnVoice;
-    private String buddyId, userId;
+    @Getter
+    private String buddyId;
+    private String userId;
     private Buddy buddy, user;
     private ViewModel viewModel;
     private List<Msg> msgs = new ArrayList<>();
@@ -217,6 +221,18 @@ public class ChatActivity extends AppCompatActivity {
             mHelper = new PanelSwitchHelper.Builder(this)
                     .build();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        MainApp.getInstance().setCurrBuddy(buddyId);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        MainApp.getInstance().setCurrBuddy(null);
+        super.onPause();
     }
 
     @Override

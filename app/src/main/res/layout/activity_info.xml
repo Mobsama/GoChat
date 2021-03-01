@@ -173,7 +173,7 @@
     </LinearLayout>
 
     <TextView
-        android:layout_below="@id/ll_info_address"
+        android:layout_below="@id/btn_info_group"
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:id="@+id/btn_info_add"
@@ -191,8 +191,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/ll_info_address"
-        android:orientation="vertical"
-        android:visibility="gone">
+        android:orientation="vertical">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="55dp"
@@ -203,7 +202,8 @@
             android:text="发送消息"
             android:textColor="@color/white"
             android:background="@drawable/login_btn_bg"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:visibility="gone"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -215,7 +215,8 @@
             android:gravity="center"
             android:text="删除好友"
             android:textColor="@color/white"
-            android:background="@drawable/info_btn_delete_bg"/>
+            android:background="@drawable/info_btn_delete_bg"
+            android:visibility="gone"/>
     </LinearLayout>
 
 

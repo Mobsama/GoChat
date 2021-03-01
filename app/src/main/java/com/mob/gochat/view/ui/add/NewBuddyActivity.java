@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.MenuItem;
 
 import com.billy.android.swipe.SmartSwipe;
@@ -62,12 +63,6 @@ public class NewBuddyActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         });
         binding.newBuddyBtn.setOnClickListener(v -> {
-//            String uuid = UUID.randomUUID().toString();
-//            Date date = new Date(System.currentTimeMillis());
-//            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-//            Request request = new Request(uuid, userId, "10010", "Test", null, format.format(date));
-//            viewModel.insertRequest(request);
             try{
                 int id = Integer.parseInt(binding.newBuddySearch.getText().toString());
                 if(id <= 10000){
@@ -108,15 +103,54 @@ public class NewBuddyActivity extends AppCompatActivity {
         adapter.setOnItemChildClickListener((adapter, view, position) -> {
             Request request = requestList.get(position);
             if(view.getId() == R.id.new_buddy_agree){
+                viewModel.addNewBuddy(request.getUserId(), request.getBuddyId(), result -> {
+                    if(result){
+                        request.setIsTreated(Request.APPROVED);
+                        Http.getUser(this, request.getBuddyId(), request.getUserId(), str -> {
+                            PostRequest req = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+                            if(req.getStatus() == 200){
+                                Buddy buddy = MainApp.getInstance().getGson().fromJson(req.getMessage(), Buddy.class);
+                                buddy.setLettersWithName(buddy.getName());
+                                if(buddy.getAvatar() == null){
+                                    request.setIsTreated(Request.APPROVED);
+                                    viewModel.upsertBuddy(buddy);
+                                }else{
+                                    Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
+                                        request.setIsTreated(Request.APPROVED);
+                                        viewModel.upsertBuddy(buddy);
+                                    });
+                                }
+                                new CountDownTimer(1000, 1000){
+                                    @Override
+                                    public void onTick(long millisUntilFinished) { }
+
+                                    @Override
+                                    public void onFinish() {
+                                        sendTip(buddy);
+                                    }
+                                };
+                            }
+                        });
+                    }else{
+                        ToastUtil.showMsg(this, "添加好友失败");
+                    }
+                });
                 request.setIsTreated(Request.APPROVED);
-                Buddy buddy = new Buddy(request.getBuddyId(), userId, request.getBuddyName(),null, null, "2000 - 01 - 01", "广东省 - 汕头市 - 潮阳区", 0);
-                viewModel.insertBuddy(buddy);
             }else if(view.getId() == R.id.new_buddy_refuse){
                 request.setIsTreated(Request.REJECTED);
             }
             viewModel.updateRequest(request);
         });
         binding.newBuddyList.setAdapter(adapter);
+    }
+
+    private void sendTip(Buddy buddy){
+        Date date = new Date(System.currentTimeMillis());
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        String uuid = UUID.randomUUID().toString();
+        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
+        viewModel.insertMsg(tip);
     }
 
     @Override

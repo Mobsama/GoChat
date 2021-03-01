@@ -37,9 +37,9 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                 if(buddy.getAvatar() == null || buddy.getAvatar().equals("")){
                     baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_fri, getContext().getDrawable(R.drawable.buddy));
                 }else{
-                    File file = new File(buddy.getAvatar());
+                    File file = new File(getContext().getFilesDir().getAbsolutePath() + "/pic/" +buddy.getAvatar());
                     if(file.exists()){
-                        baseViewHolder.setImageBitmap(R.id.chat_iv_avatar_fri, BitmapFactory.decodeFile(buddy.getAvatar()));
+                        baseViewHolder.setImageBitmap(R.id.chat_iv_avatar_fri, BitmapFactory.decodeFile(file.getPath()));
                     }else{
                         baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_fri, getContext().getDrawable(R.drawable.buddy));
                     }
@@ -73,9 +73,9 @@ public class ChatAdapter extends BaseMultiItemQuickAdapter<Msg, ChatAdapter.Chat
                 if(user.getAvatar() == null || user.getAvatar().equals("")){
                     baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_mine, getContext().getDrawable(R.drawable.buddy));
                 }else{
-                    File file = new File(user.getAvatar());
+                    File file = new File(getContext().getFilesDir().getAbsolutePath() + "/pic/" + user.getAvatar());
                     if(file.exists()){
-                        baseViewHolder.setImageBitmap(R.id.chat_iv_avatar_mine, BitmapFactory.decodeFile(user.getAvatar()));
+                        baseViewHolder.setImageBitmap(R.id.chat_iv_avatar_mine, BitmapFactory.decodeFile(file.getPath()));
                     }else{
                         baseViewHolder.setImageDrawable(R.id.chat_iv_avatar_mine, getContext().getDrawable(R.drawable.buddy));
                     }

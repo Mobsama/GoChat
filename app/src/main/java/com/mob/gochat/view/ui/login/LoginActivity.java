@@ -3,7 +3,6 @@ package com.mob.gochat.view.ui.login;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import com.mob.gochat.MainActivity;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityLoginBinding;
-import com.mob.gochat.db.RoomDataBase;
 import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.model.Msg;
@@ -25,12 +23,9 @@ import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.Sha256Util;
-import com.mob.gochat.view.base.Callable;
 import com.mob.gochat.viewmodel.ViewModel;
 
 import org.json.JSONObject;
-
-import java.io.IOException;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -86,13 +81,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
                 buddy.setLettersWithName(buddy.getName());Log.d("LOGIN", buddy.getName());
                 if(buddy.getAvatar() == null){
-                    viewModel.insertBuddy(buddy);
+                    viewModel.upsertBuddy(buddy);
                     resetMMKV(id, token);
                     gotoMain();
                 }else{
                     Log.d("LOGIN", buddy.getName());
                     Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
-                        viewModel.insertBuddy(buddy);
+                        viewModel.upsertBuddy(buddy);
                         resetMMKV(id, token);
                         gotoMain();
                     });

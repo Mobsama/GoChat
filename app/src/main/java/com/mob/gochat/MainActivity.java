@@ -1,46 +1,35 @@
 package com.mob.gochat;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.mob.gochat.db.RoomDataBase;
-import com.mob.gochat.model.Buddy;
+import com.hjq.permissions.OnPermissionCallback;
+import com.hjq.permissions.Permission;
+import com.hjq.permissions.XXPermissions;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
-import com.mob.gochat.utils.ThreadUtils;
 import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.ui.login.LoginActivity;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import java.util.List;
+
 import lombok.Getter;
 
 
 public class MainActivity extends AppCompatActivity {
-    String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.VIBRATE};
-    List<String> mPermissionList = new ArrayList<>();
-    private static final int PERMISSION_REQUEST = 1;
     @Getter
     private static MainActivity instance;
     @Getter
@@ -80,24 +69,21 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void checkPermission(){
+        XXPermissions.with(this)
+                .permission(Permission.MANAGE_EXTERNAL_STORAGE)
+                .permission(Permission.RECORD_AUDIO)
+                .request((permissions, all) -> {
+                    if(!all){
+                        ToastUtil.showMsg(MainActivity.this, "请授予全部权限");
+                    }
+                });
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         localBroadcastManager.unregisterReceiver(localReceiver);
-    }
-
-    private void checkPermission() {
-        mPermissionList.clear();
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                mPermissionList.add(permission);
-            }
-        }
-
-        if (!mPermissionList.isEmpty()) {
-            String[] permissions = mPermissionList.toArray(new String[0]);
-            ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSION_REQUEST);
-        }
     }
 
     public class LogoutBroadcastReceiver extends BroadcastReceiver{
