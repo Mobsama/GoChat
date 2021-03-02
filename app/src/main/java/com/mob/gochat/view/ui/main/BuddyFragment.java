@@ -3,6 +3,7 @@ package com.mob.gochat.view.ui.main;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +11,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.github.promeg.pinyinhelper.Pinyin;
 import com.lxj.xpopup.XPopup;
+import com.mob.gochat.MainApp;
 import com.mob.gochat.databinding.FragmentBuddyBinding;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
@@ -34,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class BuddyFragment extends Fragment {
 
@@ -44,7 +48,7 @@ public class BuddyFragment extends Fragment {
     private LinearLayoutManager buddyManager;
     private String userId;
     private final Buddy newBuddy = new Buddy("0","0","新的朋友",null,null, null, null, 0);
-    private Buddy user;
+    private Observer<Integer> observer;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -53,8 +57,8 @@ public class BuddyFragment extends Fragment {
         this.buddies.add(0, newBuddy);
         initRecycleView();
         userId = MMKVUitl.getString(DataKeyConst.USER_ID);
-        viewModel = new ViewModelProvider(getActivity()).get(ViewModel.class);
-        viewModel.getMBuddyData(userId).observe(getActivity(), buddies -> {
+        viewModel = new ViewModelProvider(requireActivity()).get(ViewModel.class);
+        viewModel.getMBuddyData(userId).observe(requireActivity(), buddies -> {
             this.buddies.clear();
             this.buddies.addAll(buddies);
             try {
@@ -77,12 +81,14 @@ public class BuddyFragment extends Fragment {
             this.buddies.add(0, newBuddy);
             buddyAdapter.notifyDataSetChanged();
         });
-        viewModel.getBuddy(userId, userId).observe(getActivity(), buddy -> {
-            this.user = buddy;
+
+        viewModel.getUntreatedRequestNum(userId).observe(requireActivity(), num -> {
+            buddies.get(0).setGender(num);
+            buddyAdapter.notifyDataSetChanged();
         });
 
-        binding.sbBuddy.setDialog(binding.tvDialog);
 
+        binding.sbBuddy.setDialog(binding.tvDialog);
         binding.sbBuddy.setOnTouchingListener(s -> {
             binding.srvBuddy.smoothCloseMenu();
             for(int i = 0; i < buddies.size(); i++){
@@ -93,17 +99,6 @@ public class BuddyFragment extends Fragment {
             }
         });
         return binding.getRoot();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        viewModel.getUntreatedRequestNum(userId).observe(getActivity(), num -> {
-            if(num != 0){
-                buddies.get(0).setGender(num);
-                buddyAdapter.notifyDataSetChanged();
-            }
-        });
     }
 
     private void initRecycleView(){
@@ -140,12 +135,21 @@ public class BuddyFragment extends Fragment {
                 Intent intent;
                 if(adapterPosition == 0){
                     intent = new Intent(getActivity(), NewBuddyActivity.class);
+                    startActivity(intent);
                 }else{
                     intent = new Intent(getActivity(), InfoActivity.class);
-                    intent.putExtra("buddy", buddies.get(adapterPosition));
-                    intent.putExtra("user", user);
+                    Buddy buddy = buddies.get(adapterPosition);
+                    intent.putExtra("buddy", buddy);
+                    if(MainApp.getInstance().isNet()){
+                        viewModel.isBuddy(buddy.getId(), buddy.getUser(), is -> {
+                            intent.putExtra("isBuddy", is);
+                            startActivity(intent);
+                        });
+                    }else{
+                        intent.putExtra("isBuddy", true);
+                        startActivity(intent);
+                    }
                 }
-                startActivity(intent);
             }
         });
         binding.srvBuddy.setSwipeMenuCreator(mSwipeMenuCreator);

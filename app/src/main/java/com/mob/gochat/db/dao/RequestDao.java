@@ -20,7 +20,7 @@ public interface RequestDao {
     @Delete
     void deleteRequest(Request request);
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.REPLACE, entity = Request.class)
     void updateRequest(Request request);
 
     @Query("SELECT * FROM request WHERE user_id=:userId ORDER BY time DESC")
@@ -28,4 +28,7 @@ public interface RequestDao {
 
     @Query("SELECT count(*) FROM request WHERE user_id=:userId AND is_treated=0")
     LiveData<Integer> getRequestUntreatedNum(String userId);
+
+    @Query("DELETE FROM request WHERE user_id=:userId AND is_treated!=0")
+    void deleteTreatedRequest(String userId);
 }

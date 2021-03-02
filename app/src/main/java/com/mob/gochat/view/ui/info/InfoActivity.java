@@ -25,6 +25,7 @@ import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
+import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.base.ImageLoader;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 import com.mob.gochat.viewmodel.ViewModel;
@@ -171,7 +172,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                 intent.putExtra("buddy",buddy.getId());
                 intent.putExtra("user", userId);
                 startActivity(intent);
-                finish();
+                InfoActivity.this.finish();
                 break;
             case R.id.btn_info_delete:
                 String name;
@@ -190,7 +191,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                             }else{
                                 viewModel.deleteBuddy(buddy);
                             }
-                            finish();
+                            InfoActivity.this.finish();
                         })
                         .show();
                 break;
@@ -201,8 +202,18 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
                     @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
                     Request request = new Request(uuid, buddy.getId(), user.getId(), user.getName(), user.getAvatar(), format.format(date));
-                    viewModel.sendRequest(this, request);
-                    finish();
+                    viewModel.sendRequest(request, s -> {
+                        runOnUiThread(() -> {
+                            if(s == 300){
+                                ToastUtil.showMsg(InfoActivity.this, "你今天已经发送过请求了哦");
+                            }else if(s == 400) {
+                                ToastUtil.showMsg(InfoActivity.this, "他已经是你的好友了哦");
+                            }else{
+                                ToastUtil.showMsg(InfoActivity.this, "发送成功");
+                            }
+                        });
+
+                    });
                 });
                 break;
             case R.id.iv_info_avatar:

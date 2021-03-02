@@ -59,36 +59,25 @@ public class Http {
     }
 
     public static void addNewBuddy(String userId, String buddyId, Callable<Integer> callable){
-        MainApp.getInstance().getSocket().emit("add", new String[]{userId, buddyId}, (args) -> {
-            JSONObject object = (JSONObject) args[0];
-            try {
-                callable.call(object.getInt("status"));
-            } catch (JSONException | IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public static void isBuddy(String userId, String buddyId, Callable<Integer> callable){
-        MainApp.getInstance().getSocket().emit("isBuddy", new String[]{userId, buddyId}, (args) -> {
-            JSONObject object = (JSONObject) args[0];
-            try {
-                callable.call(object.getInt("status"));
-            } catch (JSONException | IOException e) {
-                e.printStackTrace();
-            }
-        });
+        RxHttp.postForm(URL.add)
+                .add("userId", userId)
+                .add("buddyId", buddyId)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    callable.call(request.getStatus());
+                }, throwable -> {});
     }
 
     public static void deleteBuddy(String userId, String buddyId, Callable<Integer> callable){
-        MainApp.getInstance().getSocket().emit("delete", new String[]{userId, buddyId}, (args) -> {
-            JSONObject object = (JSONObject) args[0];
-            try {
-                callable.call(object.getInt("status"));
-            } catch (JSONException | IOException e) {
-                e.printStackTrace();
-            }
-        });
+        RxHttp.postForm(URL.delete)
+                .add("userId", userId)
+                .add("buddyId", buddyId)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    callable.call(request.getStatus());
+                }, throwable -> {});
     }
 
     public static void sendRequest(Request request, Callable<Integer> callable){
@@ -215,6 +204,17 @@ public class Http {
                     Log.d("post_user", "ERROR");
                     ThreadToast(context, "连接服务器失败");
                 });
+    }
+
+    public static void isBuddy(String userId, String buddyId, Callable<Integer> callable){
+        RxHttp.get(URL.isBuddy)
+                .add("userId", userId)
+                .add("buddyId",buddyId)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    callable.call(request.getStatus());
+                }, throwable -> {});
     }
 
     private static void ThreadToast(Context context, String msg) {

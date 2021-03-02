@@ -33,6 +33,7 @@ import com.mob.gochat.model.PostRequest;
 import com.mob.gochat.model.Request;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
+import com.mob.gochat.view.ui.add.NewBuddyActivity;
 import com.mob.gochat.view.ui.chat.ChatActivity;
 
 import java.io.File;
@@ -86,7 +87,7 @@ public class SocketIOClientService extends Service {
     }
 
     private void initSocketIOClient(){
-        URI uri = URI.create("http://mobsan.top:3000");
+        URI uri = URI.create("http://mobsan.top:3001");
         IO.Options options = IO.Options.builder()
                 .setAuth(Collections.singletonMap(DataKeyConst.TOKEN, MMKVUitl.getString(DataKeyConst.TOKEN)))
                 .setReconnection(true)
@@ -122,6 +123,7 @@ public class SocketIOClientService extends Service {
         });
         socket.on("request", args -> {
             Request request = gson.fromJson(args[0].toString(), Request.class);
+            sendNotifications(request);
             if(request.getBuddyAvatar() == null){
                 mExecutor.execute(() -> dataBase.requestDao().insertRequest(request));
             }else{
@@ -214,6 +216,30 @@ public class SocketIOClientService extends Service {
                 flag = false;
             }
         }));
+    }
+
+    private void sendNotifications(Request request){
+        String channelId = "notification";
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            String channelName  = "通知";
+            createNotificationChannel(channelId, channelName, NotificationManagerCompat.IMPORTANCE_MAX);
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId);
+        builder.setSmallIcon(R.mipmap.go)
+                .setContentTitle(request.getBuddyName())
+                .setContentText(request.getBuddyName() + "请求添加你为好友")
+                .setAutoCancel(true);
+        File file = new File(getFilesDir().getAbsolutePath() + "/pic/" + request.getBuddyAvatar());
+        if(file.exists()){
+            builder.setLargeIcon(BitmapFactory.decodeFile(file.getPath()));
+        }else{
+            builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.go));
+        }
+        Intent intent = new Intent(SocketIOClientService.this, NewBuddyActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(SocketIOClientService.this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        Notification notification = builder.build();
+        mManager.notify(1, notification);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

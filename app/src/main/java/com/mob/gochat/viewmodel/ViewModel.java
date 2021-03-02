@@ -22,6 +22,8 @@ import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.base.Callable;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -107,24 +109,27 @@ public class ViewModel extends AndroidViewModel {
         mExecutor.execute(() -> dataBase.requestDao().updateRequest(request));
     }
 
-    public void sendMsg(@NonNull Context context, @NonNull Msg msg){
+    public void deleteTreatedRequest(@NonNull String userId){
+        mExecutor.execute(() -> dataBase.requestDao().deleteTreatedRequest(userId));
+    }
+
+    public void sendMsg(@NonNull Msg msg, Callable<Boolean> callable){
         switch (msg.getMsgType()){
             case Msg.TEXT:
-                sendText(context, msg);
+                sendText(msg, callable);
                 break;
             case Msg.PIC:
             case Msg.VOICE:
-                Http.sendFile(msg.getMsgType(), msg.getMsg(), s -> {
-                    sendText(context, msg);
-                });
+                Http.sendFile(msg.getMsgType(), msg.getMsg(), s -> sendText(msg, callable));
                 break;
         }
     }
 
-    private void sendText(Context context, Msg msg){
+    private void sendText(Msg msg, Callable<Boolean> callable){
         Http.sendText(msg, s -> {
             if (s == 200){
                 insertMsg(msg);
+                callable.call(true);
             }else if(s == 300){
                 Date date = new Date(System.currentTimeMillis());
                 @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -132,22 +137,15 @@ public class ViewModel extends AndroidViewModel {
                 String uuid = UUID.randomUUID().toString();
                 Msg err = new Msg(uuid, msg.getBuddyId(), msg.getUserId(), Msg.OTHER, Msg.TEXT, "对方还不是你的好友哦。", format.format(date));
                 insertMsg(err);
+                callable.call(true);
             }else{
-                ThreadToast(context, "发送失败");
+                callable.call(false);
             }
         });
     }
 
-    public void sendRequest(@NonNull Context context, @NonNull Request request){
-        Http.sendRequest(request, s -> {
-            if(s == 300){
-                ThreadToast(context, "你今天已经发送过请求了哦");
-            }else if(s == 400) {
-                ThreadToast(context, "他已经是你的好友了哦");
-            }else{
-                ThreadToast(context, "发送成功");
-            }
-        });
+    public void sendRequest(@NonNull Request request, Callable<Integer> callable){
+        Http.sendRequest(request, callable::call);
     }
 
     public void addNewBuddy(@NonNull String userId, @NonNull String buddyId, @NonNull Callable<Boolean> callable){
@@ -161,11 +159,5 @@ public class ViewModel extends AndroidViewModel {
 
     public void deleteBuddy(String buddyId, String userId, @NonNull Callable<Boolean> callable){
         Http.deleteBuddy(userId, buddyId, s -> callable.call(s == 200));
-    }
-
-    private static void ThreadToast(Context context, String msg) {
-        Looper.prepare();
-        ToastUtil.showMsg(context, msg);
-        Looper.loop();
     }
 }

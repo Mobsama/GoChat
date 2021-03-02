@@ -193,7 +193,7 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void onAudioDBChanged(int db) {
-                float p = db * 0.1f;
+                float p = db * 0.15f;
                 voiceAnim.setScaleX(p);
                 voiceAnim.setScaleY(p);
             }
@@ -274,7 +274,6 @@ public class ChatActivity extends AppCompatActivity {
             curUUID = UUID.randomUUID().toString();
             if(MainApp.getInstance().isNet()){
                 sendMsg(Msg.TEXT, binding.chatEdit.getText().toString());
-//            msg = new Msg(uuid, buddy.getId(), userId, Msg.OTHER, Msg.TEXT, "已经添加你为好友了哦，可以开始聊天了！", format.format(date));
                 binding.chatEdit.setText("");
             }else{
                 ToastUtil.showMsg(this,"无法连接服务器");
@@ -288,8 +287,15 @@ public class ChatActivity extends AppCompatActivity {
             if (view.getId() == R.id.chat_iv_avatar_fri){
                 Intent intent = new Intent(ChatActivity.this, InfoActivity.class);
                 intent.putExtra("buddy", buddy);
-                intent.putExtra("user", user);
-                startActivity(intent);
+                if(MainApp.getInstance().isNet()){
+                    viewModel.isBuddy(buddy.getId(), buddy.getUser(), is -> {
+                        intent.putExtra("isBuddy", is);
+                        startActivity(intent);
+                    });
+                }else{
+                    intent.putExtra("isBuddy", true);
+                    startActivity(intent);
+                }
             }
             else if(view.getId() == R.id.chat_pic_item_fri || view.getId() == R.id.chat_pic_item_mine){
                 Msg msg = (Msg)adapter.getItem(position);
@@ -479,7 +485,11 @@ public class ChatActivity extends AppCompatActivity {
         @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         Msg msg = new Msg(curUUID, buddy.getId(), user.getId(), Msg.MINE, msgType, message, format.format(date));
-        viewModel.sendMsg(this, msg);
+        viewModel.sendMsg(msg, flag -> {
+            if(!flag){
+                ToastUtil.showMsg(this, "发送失败");
+            }
+        });
     }
 
     @SuppressLint("ClickableViewAccessibility")

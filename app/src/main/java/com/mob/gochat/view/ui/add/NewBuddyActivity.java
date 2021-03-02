@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import com.billy.android.swipe.SmartSwipe;
 import com.billy.android.swipe.SwipeConsumer;
 import com.billy.android.swipe.consumer.ActivitySlidingBackConsumer;
+import com.lxj.xpopup.XPopup;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.R;
 import com.mob.gochat.databinding.ActivityNewBuddyBinding;
@@ -28,6 +29,7 @@ import com.mob.gochat.utils.MMKVUitl;
 import com.mob.gochat.utils.ToastUtil;
 import com.mob.gochat.view.adapter.NewBuddyAdapter;
 import com.mob.gochat.view.ui.info.InfoActivity;
+import com.mob.gochat.view.ui.login.LoginActivity;
 import com.mob.gochat.viewmodel.ViewModel;
 
 import java.text.SimpleDateFormat;
@@ -62,6 +64,10 @@ public class NewBuddyActivity extends AppCompatActivity {
             requestList.addAll(requests);
             adapter.notifyDataSetChanged();
         });
+        initOnClick();
+    }
+
+    private void initOnClick(){
         binding.newBuddyBtn.setOnClickListener(v -> {
             try{
                 int id = Integer.parseInt(binding.newBuddySearch.getText().toString());
@@ -70,30 +76,49 @@ public class NewBuddyActivity extends AppCompatActivity {
                 }else if((id+"").equals(userId)){
                     ToastUtil.showMsg(this, "这是你哦");
                 }else{
-                    Http.getUser(this, id+"", userId, str -> {
-                        PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
-                        if(request.getStatus() == 200){
-                            Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
-                            if(buddy.getAvatar() == null){
-                                Intent intent = new Intent(this, InfoActivity.class);
-                                intent.putExtra("buddy", buddy);
-                                startActivity(intent);
-                            }else{
-                                Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
-                                    Intent intent = new Intent(this, InfoActivity.class);
-                                    intent.putExtra("buddy", buddy);
-                                    startActivity(intent);
-                                });
-                            }
-                        }else{
-                            ToastUtil.showMsg(this, "找不到联系人");
-                        }
-                    });
+                    getUser(id + "");
                 }
             }catch (Exception e){
                 ToastUtil.showMsg(this, "账号格式错误");
             }
         });
+
+        binding.newBuddyTipClear.setOnClickListener(v -> {
+            new XPopup.Builder(this).asConfirm("清除所有已处理消息", "是否要清除？",
+                () -> {
+                    viewModel.deleteTreatedRequest(userId);
+                })
+                .show();
+        });
+    }
+
+    private void getUser(String id){
+        if(MainApp.getInstance().isNet()){
+            Http.getUser(this, id, userId, str -> {
+                PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+                if(request.getStatus() == 200){
+                    Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
+                    if(buddy.getAvatar() == null){
+                        Intent intent = new Intent(this, InfoActivity.class);
+                        intent.putExtra("buddy", buddy);
+                        startActivity(intent);
+                    }else{
+                        Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
+                            Intent intent = new Intent(this, InfoActivity.class);
+                            intent.putExtra("buddy", buddy);
+                            viewModel.isBuddy(buddy.getId(), buddy.getUser(), is -> {
+                                intent.putExtra("isBuddy", is);
+                                startActivity(intent);
+                            });
+                        });
+                    }
+                }else{
+                    ToastUtil.showMsg(this, "找不到联系人");
+                }
+            });
+        }else{
+            ToastUtil.showMsg(this, "无法连接网路");
+        }
     }
 
     private void initRecyclerView(){
@@ -103,54 +128,39 @@ public class NewBuddyActivity extends AppCompatActivity {
         adapter.setOnItemChildClickListener((adapter, view, position) -> {
             Request request = requestList.get(position);
             if(view.getId() == R.id.new_buddy_agree){
-                viewModel.addNewBuddy(request.getUserId(), request.getBuddyId(), result -> {
-                    if(result){
-                        request.setIsTreated(Request.APPROVED);
-                        Http.getUser(this, request.getBuddyId(), request.getUserId(), str -> {
-                            PostRequest req = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
-                            if(req.getStatus() == 200){
-                                Buddy buddy = MainApp.getInstance().getGson().fromJson(req.getMessage(), Buddy.class);
-                                buddy.setLettersWithName(buddy.getName());
-                                if(buddy.getAvatar() == null){
-                                    request.setIsTreated(Request.APPROVED);
-                                    viewModel.upsertBuddy(buddy);
-                                }else{
-                                    Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
-                                        request.setIsTreated(Request.APPROVED);
-                                        viewModel.upsertBuddy(buddy);
-                                    });
-                                }
-                                new CountDownTimer(1000, 1000){
-                                    @Override
-                                    public void onTick(long millisUntilFinished) { }
-
-                                    @Override
-                                    public void onFinish() {
-                                        sendTip(buddy);
-                                    }
-                                };
-                            }
-                        });
-                    }else{
-                        ToastUtil.showMsg(this, "添加好友失败");
-                    }
-                });
-                request.setIsTreated(Request.APPROVED);
+                addBuddy(request);
             }else if(view.getId() == R.id.new_buddy_refuse){
                 request.setIsTreated(Request.REJECTED);
+                viewModel.updateRequest(request);
             }
-            viewModel.updateRequest(request);
         });
         binding.newBuddyList.setAdapter(adapter);
     }
 
-    private void sendTip(Buddy buddy){
-        Date date = new Date(System.currentTimeMillis());
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        String uuid = UUID.randomUUID().toString();
-        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
-        viewModel.insertMsg(tip);
+    public void addBuddy(Request request){
+        viewModel.addNewBuddy(request.getUserId(), request.getBuddyId(), result -> {
+            if(result){
+                request.setIsTreated(Request.APPROVED);
+                Http.getUser(this, request.getBuddyId(), request.getUserId(), str -> {
+                    PostRequest req = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
+                    if(req.getStatus() == 200){
+                        Buddy buddy = MainApp.getInstance().getGson().fromJson(req.getMessage(), Buddy.class);
+                        buddy.setLettersWithName(buddy.getName());
+                        if(buddy.getAvatar() == null){
+                            viewModel.upsertBuddy(buddy);
+                            viewModel.updateRequest(request);
+                        }else{
+                            Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
+                                viewModel.upsertBuddy(buddy);
+                                viewModel.updateRequest(request);
+                            });
+                        }
+                    }
+                });
+            }else{
+                ToastUtil.showMsg(this, "添加好友失败");
+            }
+        });
     }
 
     @Override

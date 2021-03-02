@@ -11,6 +11,7 @@ import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.mob.gochat.model.Buddy;
+import com.mob.gochat.model.BuddyExcludeRemark;
 import com.mob.gochat.model.BuddyWithMsgWrapper;
 
 import java.util.List;
@@ -25,6 +26,9 @@ public abstract class BuddyDao {
 
     @Update
     public abstract void updateBuddy(@NonNull Buddy buddy);
+
+    @Update(entity = Buddy.class)
+    public abstract void updateBuddyExcludeRemark(@NonNull BuddyExcludeRemark buddy);
 
     @NonNull
     @Query("SELECT * FROM buddy WHERE Buddy.user=:id AND Buddy.id!=:id")
@@ -43,7 +47,16 @@ public abstract class BuddyDao {
     public boolean upsertBuddy(Buddy buddy){
         long id = insertBuddy(buddy);
         if(id == -1){
-            updateBuddy(buddy);
+            BuddyExcludeRemark buddyExcludeRemark =
+                    new BuddyExcludeRemark(buddy.getId(),
+                                            buddy.getUser(),
+                                            buddy.getAvatar(),
+                                            buddy.getName(),
+                                            buddy.getMail(),
+                                            buddy.getBirth(),
+                                            buddy.getAddress(),
+                                            buddy.getGender());
+            updateBuddyExcludeRemark(buddyExcludeRemark);
             return false;
         }
         return true;

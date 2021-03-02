@@ -9,6 +9,9 @@ public class URL {
     public static final String token = "/token";
     public static final String code = "/code";
     public static final String user = "/user";
+    public static final String isBuddy = "/is_buddy";
+    public static final String add = "/add";
+    public static final String delete = "/delete";
     @DefaultDomain
     public static final String baseURL = "http://mobsan.top:3000";
 

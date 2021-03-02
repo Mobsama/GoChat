@@ -35,20 +35,41 @@
         android:layout_margin="@dimen/dp_10"
         android:background="@drawable/login_btn_bg"/>
 
-    <TextView
-        android:paddingStart="@dimen/dp_10"
-        android:paddingEnd="0dp"
-        android:paddingTop="@dimen/dp_4"
-        android:paddingBottom="@dimen/dp_4"
-        android:background="@color/grey_300"
-        android:id="@+id/new_buddy_tip"
+
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/grey_300"
+        android:id="@+id/new_buddy_tip"
         app:layout_constraintTop_toBottomOf="@id/new_buddy_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/new_buddy_list"
-        android:text="你的好友申请"/>
+        app:layout_constraintBottom_toTopOf="@id/new_buddy_list">
+
+        <TextView
+            android:paddingStart="@dimen/dp_10"
+            android:paddingEnd="0dp"
+            android:paddingTop="@dimen/dp_4"
+            android:paddingBottom="@dimen/dp_4"
+            android:id="@+id/new_buddy_tip_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="你的好友申请"/>
+
+        <TextView
+            android:layout_alignParentEnd="true"
+            android:paddingStart="0dp"
+            android:paddingEnd="@dimen/dp_10"
+            android:paddingTop="@dimen/dp_4"
+            android:paddingBottom="@dimen/dp_4"
+            android:id="@+id/new_buddy_tip_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="清除所有已处理"
+            android:textColor="@color/teal"/>
+
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:overScrollMode="never"
