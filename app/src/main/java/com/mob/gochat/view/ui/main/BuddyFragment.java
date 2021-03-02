@@ -19,6 +19,7 @@ import com.github.promeg.pinyinhelper.Pinyin;
 import com.lxj.xpopup.XPopup;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.databinding.FragmentBuddyBinding;
+import com.mob.gochat.http.Http;
 import com.mob.gochat.model.Buddy;
 import com.mob.gochat.utils.DataKeyConst;
 import com.mob.gochat.utils.MMKVUitl;
@@ -125,8 +126,12 @@ public class BuddyFragment extends Fragment {
             Buddy buddy = buddies.get(adapterPosition);
             new XPopup.Builder(getContext()).asInputConfirm(buddy.getName(), "请输入备注：",
                     text -> {
-                        buddy.setRemarks(text);
-                        viewModel.updateBuddy(buddy);
+                        Http.remarkBuddy(buddy.getUser(), buddy.getId(),text, s -> {
+                            if(s == 200){
+                                buddy.setRemarks(text);
+                                viewModel.updateBuddy(buddy);
+                            }
+                        });
                     }).show();
         };
 

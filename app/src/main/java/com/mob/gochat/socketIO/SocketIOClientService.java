@@ -144,27 +144,9 @@ public class SocketIOClientService extends Service {
         socket.on("buddy", args -> {
             Buddy buddy = gson.fromJson(args[0].toString(), Buddy.class);
             if(buddy.getAvatar() == null){
-                mExecutor.execute(() -> {
-                    if(dataBase.buddyDao().upsertBuddy(buddy)){
-                        Date date = new Date(System.currentTimeMillis());
-                        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-                        String uuid = UUID.randomUUID().toString();
-                        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
-                        dataBase.msgDao().insertMsg(tip);
-                    }
-                });
+                mExecutor.execute(() -> dataBase.buddyDao().upsertBuddy(buddy));
             }else{
-                Http.getFile(getBaseContext(), Msg.PIC, buddy.getAvatar(), s -> mExecutor.execute(() -> {
-                    if(dataBase.buddyDao().upsertBuddy(buddy)){
-                        Date date = new Date(System.currentTimeMillis());
-                        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-                        String uuid = UUID.randomUUID().toString();
-                        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
-                        dataBase.msgDao().insertMsg(tip);
-                    }
-                }));
+                Http.getFile(getBaseContext(), Msg.PIC, buddy.getAvatar(), s -> mExecutor.execute(() -> dataBase.buddyDao().upsertBuddy(buddy)));
             }
         });
     }
@@ -191,7 +173,7 @@ public class SocketIOClientService extends Service {
         }
         String finalText = text;
         new Handler(Looper.getMainLooper()).post(() -> dataBase.buddyDao().getBuddyById(msg.getBuddyId(), msg.getUserId()).observeForever(buddy -> {
-            if(flag){
+            if(flag && buddy!=null){
                 String title = buddy.getName();
                 if(buddy.getRemarks() != null && !buddy.getRemarks().equals("")){
                     title = buddy.getRemarks();

@@ -234,9 +234,9 @@ public class MineFragment extends Fragment implements View.OnClickListener {
             case R.id.btn_mine_logout:
                 new XPopup.Builder(getContext()).asConfirm(buddy.getName(), "是否要退出登录？",
                         () -> {
+                            MainApp.getInstance().stopSocketIO();
                             MMKVUitl.clear(DataKeyConst.TOKEN);
                             MMKVUitl.clear(DataKeyConst.USER_ID);
-                            MainApp.getInstance().stopSocketIO();
                             Intent intent = new Intent(getContext(), LoginActivity.class);
                             startActivity(intent);
                             getActivity().finish();

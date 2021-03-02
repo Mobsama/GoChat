@@ -79,15 +79,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             PostRequest request = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
             if(request.getStatus() == 200){
                 Buddy buddy = MainApp.getInstance().getGson().fromJson(request.getMessage(), Buddy.class);
-                buddy.setLettersWithName(buddy.getName());Log.d("LOGIN", buddy.getName());
+                buddy.setLettersWithName(buddy.getName());
                 if(buddy.getAvatar() == null){
-                    viewModel.upsertBuddy(buddy);
+                    viewModel.insertBuddy(buddy);
                     resetMMKV(id, token);
                     gotoMain();
                 }else{
                     Log.d("LOGIN", buddy.getName());
                     Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
-                        viewModel.upsertBuddy(buddy);
+                        viewModel.insertBuddy(buddy);
                         resetMMKV(id, token);
                         gotoMain();
                     });

@@ -97,6 +97,7 @@ public class MainApp extends Application {
 
     public void stopSocketIO(){
         socket.disconnect();
+        socket.close();
         stopService(new Intent(getBaseContext(), SocketIOClientService.class));
         unbindService(serviceConnection);
     }

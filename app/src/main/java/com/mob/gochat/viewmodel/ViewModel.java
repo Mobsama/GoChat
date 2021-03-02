@@ -70,6 +70,10 @@ public class ViewModel extends AndroidViewModel {
         mExecutor.execute(() -> dataBase.buddyDao().upsertBuddy(buddy));
     }
 
+    public void insertBuddy(@NonNull Buddy buddy){
+        mExecutor.execute(() -> dataBase.buddyDao().insertBuddy(buddy));
+    }
+
     public void updateBuddy(@NonNull Buddy buddy){
         mExecutor.execute(() -> dataBase.buddyDao().updateBuddy(buddy));
     }

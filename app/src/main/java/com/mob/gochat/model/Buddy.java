@@ -17,8 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity(tableName = "buddy",
-        primaryKeys = {"id", "user"},
-        indices = {@Index(value = {"id"},unique = true)})
+        primaryKeys = {"id", "user"})
 public class Buddy implements Parcelable {
     @Getter
     @NotNull
@@ -51,6 +50,7 @@ public class Buddy implements Parcelable {
     private String mail;
 
     @Getter
+    @Expose
     @ColumnInfo(name = "remarks", typeAffinity = ColumnInfo.TEXT)
     private String remarks;
 

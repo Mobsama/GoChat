@@ -149,10 +149,12 @@ public class NewBuddyActivity extends AppCompatActivity {
                         if(buddy.getAvatar() == null){
                             viewModel.upsertBuddy(buddy);
                             viewModel.updateRequest(request);
+                            sendTip(buddy);
                         }else{
                             Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
                                 viewModel.upsertBuddy(buddy);
                                 viewModel.updateRequest(request);
+                                sendTip(buddy);
                             });
                         }
                     }
@@ -160,6 +162,17 @@ public class NewBuddyActivity extends AppCompatActivity {
             }else{
                 ToastUtil.showMsg(this, "添加好友失败");
             }
+        });
+    }
+
+    private void sendTip(Buddy buddy){
+        Date date = new Date(System.currentTimeMillis());
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        String uuid = UUID.randomUUID().toString();
+        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
+        viewModel.sendMsg(tip, s -> {
+            viewModel.insertMsg(tip);
         });
     }
 

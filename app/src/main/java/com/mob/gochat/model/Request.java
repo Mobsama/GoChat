@@ -17,11 +17,6 @@ import lombok.Setter;
 import static androidx.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "request",
-        foreignKeys = {
-        @ForeignKey(entity = Buddy.class,
-                parentColumns = "id",
-                childColumns = "user_id",
-                onDelete = CASCADE)},
         indices = {@Index(value = "user_id")})
 public class Request {
     @Getter

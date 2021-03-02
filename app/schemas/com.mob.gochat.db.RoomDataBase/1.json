@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "3b5d8163676865cf2c4f57ffbcb7b775",
+    "identityHash": "bd4d0f8cb327a3000ec4bf798a553e36",
     "entities": [
       {
         "tableName": "msg",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `buddy_id` TEXT, `user_id` TEXT, `msg_type` INTEGER NOT NULL, `msg` TEXT, `time` TEXT, `type` INTEGER NOT NULL, `is_read` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`uuid`), FOREIGN KEY(`buddy_id`) REFERENCES `buddy`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`user_id`) REFERENCES `buddy`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `buddy_id` TEXT, `user_id` TEXT, `msg_type` INTEGER NOT NULL, `msg` TEXT, `time` TEXT, `type` INTEGER NOT NULL, `is_read` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`uuid`))",
         "fields": [
           {
             "fieldPath": "uuid",
@@ -82,30 +82,7 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_msg_user_id` ON `${TABLE_NAME}` (`user_id`)"
           }
         ],
-        "foreignKeys": [
-          {
-            "table": "buddy",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "buddy_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "buddy",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "user_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
+        "foreignKeys": []
       },
       {
         "tableName": "buddy",
@@ -173,21 +150,12 @@
           ],
           "autoGenerate": false
         },
-        "indices": [
-          {
-            "name": "index_buddy_id",
-            "unique": true,
-            "columnNames": [
-              "id"
-            ],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_buddy_id` ON `${TABLE_NAME}` (`id`)"
-          }
-        ],
+        "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "request",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `user_id` TEXT, `buddy_id` TEXT, `buddy_name` TEXT, `buddy_avatar` TEXT, `time` TEXT, `is_treated` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`uuid`), FOREIGN KEY(`user_id`) REFERENCES `buddy`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uuid` TEXT NOT NULL, `user_id` TEXT, `buddy_id` TEXT, `buddy_name` TEXT, `buddy_avatar` TEXT, `time` TEXT, `is_treated` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`uuid`))",
         "fields": [
           {
             "fieldPath": "uuid",
@@ -249,19 +217,7 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_request_user_id` ON `${TABLE_NAME}` (`user_id`)"
           }
         ],
-        "foreignKeys": [
-          {
-            "table": "buddy",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "user_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
+        "foreignKeys": []
       }
     ],
     "views": [
@@ -272,7 +228,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3b5d8163676865cf2c4f57ffbcb7b775')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bd4d0f8cb327a3000ec4bf798a553e36')"
     ]
   }
 }

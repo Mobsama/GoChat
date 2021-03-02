@@ -20,15 +20,6 @@ import lombok.Setter;
 import static androidx.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "msg",
-        foreignKeys = {
-            @ForeignKey(entity = Buddy.class,
-                parentColumns = "id",
-                childColumns = "buddy_id",
-                onDelete = CASCADE),
-            @ForeignKey(entity = Buddy.class,
-                parentColumns = "id",
-                childColumns = "user_id",
-                onDelete = CASCADE)},
         indices = {@Index(value = "buddy_id"), @Index(value = "user_id")})
 public class Msg implements MultiItemEntity {
     @Ignore

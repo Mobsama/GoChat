@@ -80,6 +80,18 @@ public class Http {
                 }, throwable -> {});
     }
 
+    public static void remarkBuddy(String userId, String buddyId, String remark, Callable<Integer> callable){
+        RxHttp.postForm(URL.delete)
+                .add("userId", userId)
+                .add("buddyId", buddyId)
+                .add("remark", remark)
+                .asString()
+                .subscribe(s -> {
+                    PostRequest request = MainApp.getInstance().getGson().fromJson(s, PostRequest.class);
+                    callable.call(request.getStatus());
+                }, throwable -> {});
+    }
+
     public static void sendRequest(Request request, Callable<Integer> callable){
         String[] reqJson = new String[]{MainApp.getInstance().getGson().toJson(request)};
         MainApp.getInstance().getSocket().emit("request", reqJson, (args) -> {
