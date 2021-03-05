@@ -17,6 +17,7 @@
         android:paddingTop="40dp">
 
         <com.mob.gochat.view.ui.widget.NiceImageView
+            android:scaleType="centerCrop"
             android:id="@+id/iv_info_avatar"
             android:layout_marginStart="25dp"
             android:layout_width="60dp"

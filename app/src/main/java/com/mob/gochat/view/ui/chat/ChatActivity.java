@@ -17,6 +17,7 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -36,6 +37,7 @@ import com.lxj.xpopup.XPopup;
 import com.mob.gochat.MainApp;
 import com.mob.gochat.audio.AudioPlayManager;
 import com.mob.gochat.audio.AudioRecordManager;
+import com.mob.gochat.audio.IAudioPlayListener;
 import com.mob.gochat.audio.IAudioRecordListener;
 import com.mob.gochat.databinding.ActivityChatBinding;
 import com.mob.gochat.model.Buddy;
@@ -306,7 +308,22 @@ public class ChatActivity extends AppCompatActivity {
             }
             else if(view.getId() == R.id.chat_voice_item_mine || view.getId() == R.id.chat_voice_item_fri){
                 Msg msg = (Msg)adapter.getItem(position);
-                AudioPlayManager.getInstance().startPlay(this, Uri.parse(msg.getMsg()), null);
+                AudioPlayManager.getInstance().startPlay(this, Uri.parse(getFilesDir().getAbsolutePath() + "/audio/" + msg.getMsg()), new IAudioPlayListener() {
+                    @Override
+                    public void onStart(Uri var1) {
+                        binding.chatVoiceTip.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onStop(Uri var1) {
+
+                    }
+
+                    @Override
+                    public void onComplete(Uri var1) {
+                        binding.chatVoiceTip.setVisibility(View.GONE);
+                    }
+                });
             }
         });
 
