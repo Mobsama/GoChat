@@ -12,6 +12,7 @@ public class URL {
     public static final String isBuddy = "/is_buddy";
     public static final String add = "/add";
     public static final String delete = "/delete";
+    public static final String remark = "/remark";
     @DefaultDomain
     public static final String baseURL = "http://mobsan.top:3000";
 

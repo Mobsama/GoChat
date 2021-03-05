@@ -81,7 +81,7 @@ public class Http {
     }
 
     public static void remarkBuddy(String userId, String buddyId, String remark, Callable<Integer> callable){
-        RxHttp.postForm(URL.delete)
+        RxHttp.postForm(URL.remark)
                 .add("userId", userId)
                 .add("buddyId", buddyId)
                 .add("remark", remark)
