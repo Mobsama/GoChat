@@ -141,6 +141,7 @@ public class NewBuddyActivity extends AppCompatActivity {
         viewModel.addNewBuddy(request.getUserId(), request.getBuddyId(), result -> {
             if(result){
                 request.setIsTreated(Request.APPROVED);
+                viewModel.updateRequest(request);
                 Http.getUser(this, request.getBuddyId(), request.getUserId(), str -> {
                     PostRequest req = MainApp.getInstance().getGson().fromJson(str, PostRequest.class);
                     if(req.getStatus() == 200){
@@ -148,12 +149,10 @@ public class NewBuddyActivity extends AppCompatActivity {
                         buddy.setLettersWithName(buddy.getName());
                         if(buddy.getAvatar() == null){
                             viewModel.upsertBuddy(buddy);
-                            viewModel.updateRequest(request);
                             sendTip(buddy);
                         }else{
                             Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
                                 viewModel.upsertBuddy(buddy);
-                                viewModel.updateRequest(request);
                                 sendTip(buddy);
                             });
                         }

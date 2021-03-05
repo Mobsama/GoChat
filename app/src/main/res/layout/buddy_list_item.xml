@@ -8,7 +8,7 @@
     android:paddingEnd="10dp">
 
     <com.mob.gochat.view.ui.widget.NiceImageView
-        android:scaleType="fitXY"
+        android:scaleType="centerCrop"
         android:id="@+id/buddy_avatar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"

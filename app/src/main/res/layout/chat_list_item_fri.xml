@@ -10,7 +10,7 @@
     tools:ignore="SmallSp">
 
     <com.mob.gochat.view.ui.widget.NiceImageView
-        android:scaleType="fitXY"
+        android:scaleType="centerCrop"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="@dimen/dp_10"

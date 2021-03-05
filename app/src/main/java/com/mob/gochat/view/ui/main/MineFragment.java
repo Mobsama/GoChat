@@ -226,7 +226,7 @@ public class MineFragment extends Fragment implements View.OnClickListener {
             case R.id.iv_mine_avatar:
                 if(buddy.getAvatar() != null){
                     new XPopup.Builder(getActivity())
-                            .asImageViewer((ImageView) v, buddy.getAvatar(), new ImageLoader())
+                            .asImageViewer((ImageView) v, getActivity().getFilesDir().getAbsolutePath() + "/pic/" +buddy.getAvatar(), new ImageLoader())
                             .isShowSaveButton(false)
                             .show();
                 }
