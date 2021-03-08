@@ -76,7 +76,7 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onObserve(){
         viewModel.getBuddy(buddy.getId(), userId).observe(this, b -> {
-            if(isBuddy){
+            if(isBuddy && b != null){
                 buddy = b;
                 binding.btnInfoChat.setVisibility(View.VISIBLE);
                 binding.btnInfoDelete.setVisibility(View.VISIBLE);

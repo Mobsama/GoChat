@@ -41,7 +41,7 @@ import java.util.UUID;
 
 public class NewBuddyActivity extends AppCompatActivity {
     private ActivityNewBuddyBinding binding;
-    private ViewModel viewModel;
+    ViewModel viewModel;
     private List<Request> requestList = new ArrayList<>();
     private NewBuddyAdapter adapter;
     private final String userId = MMKVUitl.getString(DataKeyConst.USER_ID);
@@ -101,7 +101,10 @@ public class NewBuddyActivity extends AppCompatActivity {
                     if(buddy.getAvatar() == null){
                         Intent intent = new Intent(this, InfoActivity.class);
                         intent.putExtra("buddy", buddy);
-                        startActivity(intent);
+                        viewModel.isBuddy(buddy.getId(), buddy.getUser(), is -> {
+                            intent.putExtra("isBuddy", is);
+                            startActivity(intent);
+                        });
                     }else{
                         Http.getFile(this, Msg.PIC, buddy.getAvatar(), path -> {
                             Intent intent = new Intent(this, InfoActivity.class);
@@ -165,13 +168,22 @@ public class NewBuddyActivity extends AppCompatActivity {
     }
 
     private void sendTip(Buddy buddy){
-        Date date = new Date(System.currentTimeMillis());
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        String uuid = UUID.randomUUID().toString();
-        Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
-        viewModel.sendMsg(tip, s -> {
-            viewModel.insertMsg(tip);
+        runOnUiThread(() -> {
+            Date date = new Date(System.currentTimeMillis());
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            String uuid = UUID.randomUUID().toString();
+            Msg tip = new Msg(uuid, buddy.getId(), buddy.getUser(), Msg.OTHER, Msg.TEXT, "我已经添加你为好友了哦。", format.format(date));
+            new CountDownTimer(500, 500) {
+                @Override
+                public void onTick(long millisUntilFinished) { }
+                @Override
+                public void onFinish() {
+                    viewModel.sendMsg(tip, s -> {
+                        viewModel.insertMsg(tip);
+                    });
+                }
+            }.start();
         });
     }
 
